@@ -18,5 +18,9 @@
   "bugs": {
     "url": "https://github.com/Kashio/kaiser/issues"
   },
-  "homepage": "https://github.com/Kashio/kaiser#readme"
+  "homepage": "https://github.com/Kashio/kaiser#readme",
+  "dependencies": {
+    "request": "^2.67.0",
+    "urijs": "^1.17.0"
+  }
 }
