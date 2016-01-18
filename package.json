@@ -21,7 +21,9 @@
   "homepage": "https://github.com/Kashio/kaiser#readme",
   "dependencies": {
     "async": "^1.5.2",
+    "escape-string-regexp": "^1.0.4",
     "iconv-lite": "^0.4.13",
+    "node-fs": "^0.1.7",
     "request": "^2.67.0",
     "underscore": "^1.8.3",
     "urijs": "^1.17.0"
