@@ -4,7 +4,8 @@
   "description": "Node.js module for crawling the web",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "gulp run-tests",
+    "posttest": "npm run lint",
     "lint": "eslint --fix --max-warnings 1 lib/ *.js tests/ && echo Lint passed."
   },
   "repository": {
@@ -12,7 +13,10 @@
     "url": "git+https://github.com/Kashio/kaiser.git"
   },
   "keywords": [
-    "crawl"
+    "crawl",
+    "crawler",
+    "crawling",
+    "spider"
   ],
   "author": "Roy Mor <roy.mor173@gmail.com>",
   "license": "MIT",
@@ -22,13 +26,26 @@
   "homepage": "https://github.com/Kashio/kaiser#readme",
   "dependencies": {
     "async": "^1.5.2",
+    "callsite": "^1.0.0",
     "escape-string-regexp": "^1.0.4",
+    "fspvr": "^1.0.4",
     "iconv-lite": "^0.4.13",
     "node-fs": "^0.1.7",
     "nrtv-he": "0.0.0",
-    "request": "^2.67.0",
+    "request": "^2.72.0",
     "robots": "^0.9.4",
     "underscore": "^1.8.3",
-    "urijs": "^1.17.0"
+    "urijs": "^1.18.0"
+  },
+  "devDependencies": {
+    "chai": "^3.5.0",
+    "chai-things": "^0.2.0",
+    "express": "^4.13.4",
+    "gulp": "^3.9.1",
+    "gulp-mocha": "^2.2.0",
+    "istanbul": "^0.4.3",
+    "mocha": "^2.4.5",
+    "sinon": "^1.17.4",
+    "strip-bom": "^3.0.0"
   }
 }
