@@ -3,28 +3,27 @@
  */
 
 // npm modules
-var sinon          = require('sinon'),
-    expect         = require('chai').expect;
+var sinon                    = require('sinon'),
+    expect                   = require('chai').expect;
 
 // lib modules
-var kaiser         = require('../index'),
-	ResourceWorker = require('../lib/resource_worker'),
-	specHelper     = require('./spec_helper');
+var kaiser                   = require('../index'),
+	ResourceWorker           = require('../lib/resource_worker'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
 var Composer       = kaiser.Composer;
 
 describe('Composer', function() {
 	describe('constructor', function() {
-		it('throw an exception', function() {
+		it('should throw an exception', function() {
 			expect(function() {
 				new Composer();
 			}).to.throw(Error, 'cannot instantiate Composer because it\'s an abstract class');
 		});
 	});
 	describe('.init()', function() {
-		beforeEach(specHelper.beforeEach);
-		afterEach(specHelper.afterEach);
-		it('call ResourceWorker.init() function', function() {
+		beforeEach(resourceWorkerSpecHelper.beforeEach);
+		it('should call ResourceWorker.init() function', function() {
 			Composer.init('crawler');
 			sinon.assert.calledOnce(ResourceWorker.init);
 			sinon.assert.calledWithExactly(ResourceWorker.init, 'crawler', 'compose');

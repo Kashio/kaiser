@@ -6,7 +6,8 @@
   "scripts": {
     "test": "gulp run-tests",
     "posttest": "npm run lint",
-    "lint": "eslint --fix --max-warnings 1 lib/ *.js tests/ && echo Lint passed."
+    "lint": "eslint --fix --max-warnings 1 lib/ *.js tests/ && echo Lint passed.",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
   },
   "repository": {
     "type": "git",
@@ -45,6 +46,8 @@
     "gulp-mocha": "^2.2.0",
     "istanbul": "^0.4.3",
     "mocha": "^2.4.5",
+    "mocha-sinon": "^1.1.5",
+    "proxyquire": "^1.7.9",
     "sinon": "^1.17.4",
     "strip-bom": "^3.0.0"
   }

@@ -15,7 +15,7 @@ var Composer      = kaiser.Composer,
 
 describe('BasicComposer', function() {
 	describe('constructor', function() {
-		it('call BasicComposer.init() function', function() {
+		it('should call BasicComposer.init() function', function() {
 			var basicComposerInitSpy = sinon.spy(BasicComposer, 'init');
 			new BasicComposer('crawler');
 			sinon.assert.calledOnce(basicComposerInitSpy);
@@ -23,7 +23,7 @@ describe('BasicComposer', function() {
 		});
 	});
 	describe('.init()', function() {
-		it('call Composer.init() function', function() {
+		it('should call Composer.init() function', function() {
 			var composerInitSpy = sinon.spy(Composer, 'init');
 			BasicComposer.init('crawler');
 			sinon.assert.calledOnce(composerInitSpy);
@@ -31,7 +31,7 @@ describe('BasicComposer', function() {
 		});
 	});
 	describe('#logic()', function() {
-		it ('compose resources from array', function() {
+		it ('should compose resources from array', function() {
 			var basicComposer = new BasicComposer();
 			const originator = Resource.instance('https://www.google.com', null);
 			var logicDoneSpy = sinon.spy();
