@@ -14,19 +14,26 @@ var kaiser                  = require('../index'),
 var Fetcher                 = kaiser.Fetcher;
 
 describe('Fetcher', function() {
-	describe('constructor', function() {
+	describe('Fetcher()', function() {
 		it('should throw an exception', function() {
+			// Validation
 			expect(function() {
 				new Fetcher();
 			}).to.throw(Error, 'cannot instantiate Fetcher because it\'s an abstract class');
 		});
 	});
 	describe('.init()', function() {
+		before(function() {
+			this.validate = function(crawler) {
+				Fetcher.init(crawler);
+				sinon.assert.calledOnce(ResourceWorker.init);
+				sinon.assert.calledWithExactly(ResourceWorker.init, crawler, 'fetch');
+			};
+		});
 		beforeEach(resourcWorkerSpecHelper.beforeEach);
-		it('should call ResourceWorker.init() function', function() {
-			Fetcher.init('crawler');
-			sinon.assert.calledOnce(ResourceWorker.init);
-			sinon.assert.calledWithExactly(ResourceWorker.init, 'crawler', 'fetch');
+		it('should call ResourceWorker.init()', function() {
+			// Validation
+			this.validate('crawler');
 		});
 	});
 });

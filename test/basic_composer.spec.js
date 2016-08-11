@@ -16,28 +16,82 @@ var Composer      = kaiser.Composer,
 	BasicComposer = kaiser.BasicComposer;
 
 describe('BasicComposer', function() {
-	describe('constructor', function() {
-		it('should call BasicComposer.init() function', function() {
-			var basicComposerInitSpy = sinon.spy(BasicComposer, 'init');
-			new BasicComposer('crawler');
-			sinon.assert.calledOnce(basicComposerInitSpy);
-			sinon.assert.calledWithExactly(basicComposerInitSpy, 'crawler');
+	describe('BasicComposer()', function() {
+		before(function() {
+			this.validate = function(crawler, expectedCrawler) {
+				new BasicComposer(crawler);
+
+				sinon.assert.calledOnce(BasicComposer.init);
+				sinon.assert.calledWithExactly(BasicComposer.init, expectedCrawler);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.stub(BasicComposer, 'init');
+		});
+		it('should construct BasicComposer instance successfully', function() {
+			// Object set-up
+			var crawler = 'crawler';
+
+			// Expected arguments to be passed to BasicComposer.init
+			const expectedCrawler = crawler;
+
+			// Validation
+			this.validate(crawler, expectedCrawler);
 		});
 	});
 	describe('.init()', function() {
-		it('should call Composer.init() function', function() {
-			var composerInitSpy = sinon.spy(Composer, 'init');
-			BasicComposer.init('crawler');
-			sinon.assert.calledOnce(composerInitSpy);
-			sinon.assert.calledWithExactly(composerInitSpy, 'crawler');
+		before(function() {
+			this.validate = function(basicComposer, crawler, expectedCrawler) {
+				BasicComposer.init.call(basicComposer, crawler);
+
+				sinon.assert.calledOnce(BasicComposer.init);
+				sinon.assert.calledWithExactly(BasicComposer.init, crawler);
+				sinon.assert.calledOnce(Composer.init);
+				sinon.assert.calledWithExactly(Composer.init, expectedCrawler);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(BasicComposer, 'init');
+			this.sinon.stub(Composer, 'init');
+		});
+		it('should initialize BasicComposer instance with default parameters', function() {
+			// Object set-up
+			var basicComposer = {};
+
+			// Input arguments
+			var crawler = 'crawler';
+
+			// Expected arguments to be passed to Composer.init
+			const expectedCrawler = crawler;
+
+			// Validation
+			this.validate(basicComposer, crawler,
+				expectedCrawler);
 		});
 	});
 	describe('#logic()', function() {
-		it ('should compose resources from array', function() {
+		before(function() {
+			this.validate = function(basicComposer, resource, callback, extraArgs,
+			                         expectedError, expectedResources) {
+				basicComposer.logic(resource, callback, extraArgs);
+
+				sinon.assert.calledOnce(BasicComposer.prototype.logic);
+				sinon.assert.calledWithExactly(BasicComposer.prototype.logic, resource, callback, extraArgs);
+				sinon.assert.calledOnce(callback);
+				sinon.assert.calledWithExactly(callback, expectedError, expectedResources);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(BasicComposer.prototype, 'logic');
+		});
+		it ('should compose resources from an array', function() {
+			// Object set-up
 			var basicComposer = new BasicComposer();
-			const originator = Resource.instance('https://www.google.com', null);
-			var logicDoneSpy = sinon.spy();
-			const uris = [[
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var callback = sinon.spy();
+			var uris = [[
 				'https://en.wikipedia.org/wiki/Main_Page',
 				'https://www.youtube.com/',
 				'https://www.npmjs.com/',
@@ -49,15 +103,19 @@ describe('BasicComposer', function() {
 				[],
 				/test/i
 			]];
-			const resultResources = [
-				new Resource(new URI('https://en.wikipedia.org/wiki/Main_Page'), 0, originator),
-				new Resource(new URI('https://www.youtube.com/'), 0, originator),
-				new Resource(new URI('https://www.npmjs.com/'), 0, originator),
-				new Resource(new URI('https://www.google.com/doodles'), 1, originator)
+
+			// Expected arguments to be passed to the callback
+			const expectedError = null;
+			const expectedResources = [
+				new Resource(new URI('https://en.wikipedia.org/wiki/Main_Page'), 0, resource),
+				new Resource(new URI('https://www.youtube.com/'), 0, resource),
+				new Resource(new URI('https://www.npmjs.com/'), 0, resource),
+				new Resource(new URI('https://www.google.com/doodles'), 1, resource)
 			];
-			basicComposer.logic(originator, logicDoneSpy, uris);
-			sinon.assert.calledOnce(logicDoneSpy, 'BasicComposer#logic() should call its done() callback once');
-			sinon.assert.calledWithExactly(logicDoneSpy, null, resultResources);
+
+			// Validation
+			this.validate(basicComposer, resource, callback, uris,
+				expectedError, expectedResources);
 		});
 	});
 });

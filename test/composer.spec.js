@@ -14,19 +14,26 @@ var kaiser                   = require('../index'),
 var Composer                 = kaiser.Composer;
 
 describe('Composer', function() {
-	describe('constructor', function() {
+	describe('Composer()', function() {
 		it('should throw an exception', function() {
+			// Validation
 			expect(function() {
 				new Composer();
 			}).to.throw(Error, 'cannot instantiate Composer because it\'s an abstract class');
 		});
 	});
 	describe('.init()', function() {
+		before(function() {
+			this.validate = function(crawler) {
+				Composer.init(crawler);
+				sinon.assert.calledOnce(ResourceWorker.init);
+				sinon.assert.calledWithExactly(ResourceWorker.init, crawler, 'compose');
+			};
+		});
 		beforeEach(resourceWorkerSpecHelper.beforeEach);
-		it('should call ResourceWorker.init() function', function() {
-			Composer.init('crawler');
-			sinon.assert.calledOnce(ResourceWorker.init);
-			sinon.assert.calledWithExactly(ResourceWorker.init, 'crawler', 'compose');
+		it('should call ResourceWorker.init()', function() {
+			// Validation
+			this.validate('crawler');
 		});
 	});
 });
