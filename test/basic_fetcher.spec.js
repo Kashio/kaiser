@@ -66,7 +66,7 @@ describe('BasicFetcher', function() {
 				sinon.assert.calledWithExactly(BasicFetcher.init, crawler, options, requestSettings);
 				sinon.assert.calledOnce(Fetcher.init);
 				sinon.assert.calledWithExactly(Fetcher.init, expectedCrawler);
-				basicFetcher.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler');
+				basicFetcher.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 				basicFetcher.should.have.property('maxAttempts').and.to.equal(expectedMaxAttempts);
 				basicFetcher.should.have.property('retryDelay').and.to.equal(expectedRetryDelay);
 				basicFetcher.should.have.property('maxConcurrentRequests').and.to.equal(expectedMaxConcurrentRequests);
@@ -78,7 +78,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher, 'init');
-			this.sinon.stub(Fetcher, 'init');
+			this.sinon.spy(Fetcher, 'init'); // Not a stub because we want Fetcher.init() to initialize self.crawler to pass it to self.policyChecker
 		});
 		it('should initialize BasicFetcher instance with default parameters', function() {
 			// Object set-up
@@ -253,6 +253,79 @@ describe('BasicFetcher', function() {
 			sinon.assert.calledOnce(runRequestStub);
 		});
 	});
+	describe('#runRequest', function() {
+		before(function() {
+			this.clock = sinon.useFakeTimers();
+			this.validate = function(basicFetcher) {
+				basicFetcher.runRequest();
+				this.clock.tick(0);
+				sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
+				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(BasicFetcher.prototype, 'runRequest');
+		});
+		it('should fail to run a request due to no `pendingRequests`', function() {
+			//Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Validation
+			this.validate(basicFetcher);
+
+			// Specific validation
+			BasicFetcher.prototype.runRequest.returned();
+
+		});
+		it('should fail to run a request because of passing `maxConcurrentRequests` threshold', function() {
+			//Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Pre-conditions
+			basicFetcher.pendingRequests.push(1);
+			basicFetcher.activeRequests = 100;
+
+			// Validation
+			this.validate(basicFetcher);
+
+			// Specific validation
+			BasicFetcher.prototype.runRequest.returned();
+		});
+		it('should run a request successfully', function() {
+			//Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Expected aeguments that basicFetcher.pendingRequests[0].function is going to be called with
+			var number = 5;
+			var string = 'Hi';
+
+			// Expected values basicFetcher is going to be set to
+			const expectedActiveRequests = 1;
+
+			// Spies, Stubs, Mocks
+			var runRequestFunction = this.sinon.spy();
+
+			// Pre-conditions
+			basicFetcher.pendingRequests.push({
+				"arguments": [number, string],
+				"function": runRequestFunction
+			});
+
+			// Validation
+			this.validate(basicFetcher);
+
+			// Specific validation
+			process.nextTick(function() {
+				basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
+				basicFetcher.pendingRequests.should.be.empty;
+				sinon.assert.calledOnce(runRequestFunction);
+				sinon.assert.calledWithExactly(runRequestFunction, number, string);
+				sinon.assert.calledTwice(BasicFetcher.prototype.runRequest);
+				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest.secondCall);
+				BasicFetcher.prototype.runRequest.returned();
+			});
+		});
+	});
 	describe('#requestLoop()', function() {
 		before(function() {
 			this.validate = function(basicFetcher, options, attemptsLeft, resource, callback, lastError,
@@ -300,7 +373,7 @@ describe('BasicFetcher', function() {
 			var attemptsLeft = 0;
 			var resource = null;
 			var callback = function() {};
-			var lastError = new Error('My custom error');
+			var lastError = new Error('oops');
 
 			// Expected arguments to be passed to BasicFetcher.prototype.handleResponse
 			const expectedError = lastError;
@@ -394,7 +467,7 @@ describe('BasicFetcher', function() {
 					expectedError, expectedResponse, expectedBody, expectedResource, expectedCallback,
 					1, true);
 			});
-			it('should succeed handling response error with http response 200', function() {
+			it('should handle response error successfully with http response 200', function() {
 				// Object set-up
 				var basicFetcher = new BasicFetcher({}, {
 					retryDelay: 0
@@ -487,13 +560,18 @@ describe('BasicFetcher', function() {
 	describe('#handleResponse()', function() {
 		before(function() {
 			this.validate = function(basicFetcher, error, response, body, resource, callback,
-			                         expectedError, expectedResource) {
+			                         expectedError, expectedResource, expectedActiveRequests) {
 				basicFetcher.handleResponse(error, response, body, resource, callback);
 
 				sinon.assert.calledOnce(BasicFetcher.prototype.handleResponse);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.handleResponse, error, response, body, resource, callback);
 				sinon.assert.calledOnce(callback);
-				sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
+				if (!expectedResource) {
+					sinon.assert.calledWithExactly(callback, expectedError);
+				} else {
+					sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
+				}
+				basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
 				sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 			};
 		});
@@ -501,7 +579,7 @@ describe('BasicFetcher', function() {
 			this.sinon.spy(BasicFetcher.prototype, 'handleResponse');
 			this.sinon.stub(BasicFetcher.prototype, 'runRequest');
 		});
-		it('should succeed hadling response', function() {
+		it('should handle response successfully', function() {
 			// Object set-up
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
@@ -517,7 +595,7 @@ describe('BasicFetcher', function() {
 			var expectedResource = resource;
 			expectedResource.content = body;
 
-			// Expected values
+			// Expected values to set basicFetcher to
 			const expectedTotalBytesFetched = body.length;
 			const expectedResourceContent = body;
 			const expectedActiveRequests = basicFetcher.activeRequests - 1;
@@ -529,12 +607,188 @@ describe('BasicFetcher', function() {
 
 			// Validation
 			this.validate(basicFetcher, error, response, body, resource, callback,
-				expectedError, expectedResource);
+				expectedError, expectedResource, expectedActiveRequests);
 
 			// Specific validation
 			basicFetcher.totalBytesFetched.should.be.equal(expectedTotalBytesFetched);
 			resource.content.should.be.equal(expectedResourceContent);
-			basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
+		});
+		it('should fail to handle response because resource is not permitted by policy checker mime type check', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var error = null;
+			var response = { headers: {} };
+			var body = null;
+			var resource = Resource.instance('https://www.google.com', null);
+			var callback = this.sinon.spy();
+
+			// Expected arguments to be passed to the callback
+			const expectedError = new Error('Fetch failed because a mime-type is not allowed or file size is bigger than permited');
+
+			// Expected values to set basicFetcher to
+			const expectedActiveRequests = basicFetcher.activeRequests - 1;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(PolicyChecker.prototype, 'isMimeTypeAllowed').returns(false);
+
+			// Pre-conditions
+			basicFetcher.fetchedUris.push(resource.uri.toString());
+
+			// Validation
+			this.validate(basicFetcher, error, response, body, resource, callback,
+				expectedError, null, expectedActiveRequests);
+
+			// Specific validation
+			basicFetcher.fetchedUris.should.be.empty;
+		});
+		it('should fail to handle response because of an error', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var error = new Error('oops');
+			var response = { headers: {} };
+			var body = null;
+			var resource = Resource.instance('https://www.google.com', null);
+			var callback = this.sinon.spy();
+
+			// Expected arguments to be passed to the callback
+			const expectedError = new Error('Fetch failed because a mime-type is not allowed or file size is bigger than permited');
+
+			// Expected values to set basicFetcher to
+			const expectedActiveRequests = basicFetcher.activeRequests - 1;
+
+			// Pre-conditions
+			basicFetcher.fetchedUris.push(resource.uri.toString());
+
+			// Validation
+			this.validate(basicFetcher, error, response, body, resource, callback,
+				expectedError, null, expectedActiveRequests);
+
+			// Specific validation
+			basicFetcher.fetchedUris.should.be.empty;
+		});
+	});
+	describe('#decodeBuffer()', function() {
+		before(function() {
+			this.validate = function(basicFetcher, buffer, contentTypeHeader, resource,
+			                         expectedCharset, expectedDecodedBuffer) {
+				basicFetcher.decodeBuffer(buffer, contentTypeHeader, resource);
+
+				sinon.assert.calledOnce(BasicFetcher.prototype.decodeBuffer);
+				sinon.assert.calledWithExactly(BasicFetcher.prototype.decodeBuffer, buffer, contentTypeHeader, resource);
+				resource.should.have.property('encoding', expectedCharset);
+				BasicFetcher.prototype.decodeBuffer.returned(expectedDecodedBuffer);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(BasicFetcher.prototype, 'decodeBuffer');
+		});
+		it('should decode a buffer and add charset meta-tag to it', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var buffer = '<head></head>';
+			var contentTypeHeader = null;
+			var resource = {};
+
+			// Expected values
+			const expectedCharset = 'utf-8';
+
+			// Expected return value by decodeBuffer()
+			const expectedDeocdedBuffer = util.format('<head>\t<meta charset="%s">%s</head>', expectedCharset, require('os').EOL);
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: expectedCharset, addCharsetMetaTag: true });
+
+			// Validation
+			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
+				expectedCharset, expectedDeocdedBuffer);
+		});
+		it('should decode a buffer without adding charset meta-tag to it', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var buffer = '<head></head>';
+			var contentTypeHeader = null;
+			var resource = {};
+
+			// Expected values
+			const expectedCharset = 'utf-8';
+
+			// Expected return value by decodeBuffer()
+			const expectedDeocdedBuffer = buffer;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: expectedCharset, addCharsetMetaTag: false });
+
+			// Validation
+			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
+				expectedCharset, expectedDeocdedBuffer);
+		});
+	});
+	describe('#getEncoding()', function() {
+		before(function() {
+			this.validate = function(basicFetcher, buffer, contentTypeHeader,
+			                         expectedResult) {
+				basicFetcher.getEncoding(buffer, contentTypeHeader);
+
+				sinon.assert.calledOnce(BasicFetcher.prototype.getEncoding);
+				sinon.assert.calledWithExactly(BasicFetcher.prototype.getEncoding, buffer, contentTypeHeader);
+				BasicFetcher.prototype.getEncoding.returned(expectedResult);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(BasicFetcher.prototype, 'getEncoding');
+		});
+		it('should get a buffer encoding and set the `addCharsetMetaTag` flag', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var buffer = '<head></head>';
+			var contentTypeHeader = 'charset="utf-8"';
+
+			// Expected return value by decodeBuffer()
+			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
+
+			// Validation
+			this.validate(basicFetcher, buffer, contentTypeHeader,
+				expectedResult);
+		});
+		it('should get a buffer encoding without setting the `addCharsetMetaTag` flag', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var buffer = '<head><meta charset="utf-8"></head>';
+			var contentTypeHeader = '';
+
+			// Expected return value by decodeBuffer()
+			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: false };
+
+			// Validation
+			this.validate(basicFetcher, buffer, contentTypeHeader,
+				expectedResult);
+		});
+		it('should get a buffer encoding without setting the `addCharsetMetaTag` flag and set the encoding by plain `contentTypeHeader` value', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({}, {}, {});
+
+			// Input arguments
+			var buffer = '<head></head>';
+			var contentTypeHeader = '';
+
+			// Expected return value by decodeBuffer()
+			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
+
+			// Validation
+			this.validate(basicFetcher, buffer, contentTypeHeader,
+				expectedResult);
 		});
 	});
 });
