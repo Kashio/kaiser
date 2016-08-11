@@ -7,6 +7,8 @@ var sinon         = require('sinon'),
     URI           = require('urijs');
 
 // lib modules
+require('./spec_helper');
+
 var kaiser        = require('../index'),
 	Resource      = require('../lib/resource');
 

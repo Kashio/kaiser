@@ -11,7 +11,7 @@ var kaiser                   = require('../index'),
 	ResourceWorker           = require('../lib/resource_worker'),
 	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Composer       = kaiser.Composer;
+var Composer                 = kaiser.Composer;
 
 describe('Composer', function() {
 	describe('constructor', function() {

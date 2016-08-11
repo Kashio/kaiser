@@ -11,7 +11,7 @@ var kaiser                  = require('../index'),
 	ResourceWorker          = require('../lib/resource_worker'),
 	resourcWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Fetcher        = kaiser.Fetcher;
+var Fetcher                 = kaiser.Fetcher;
 
 describe('Fetcher', function() {
 	describe('constructor', function() {

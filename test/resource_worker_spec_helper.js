@@ -8,8 +8,9 @@
 var sinon          = require('sinon');
 
 // lib modules
-var specHelper     = require('./spec_helper'),
-    ResourceWorker = require('../lib/resource_worker');
+require('./spec_helper');
+
+var ResourceWorker = require('../lib/resource_worker');
 
 module.exports = {
 	beforeEach: function() {
