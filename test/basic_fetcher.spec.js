@@ -89,7 +89,7 @@ describe('BasicFetcher', function() {
 			var options = 'options';
 			var requestSettings = 'requestSettings';
 
-			// Expected arguments to be passed to Composer.init
+			// Expected arguments to be passed to Fetcher.init
 			const expectedCrawler = crawler;
 
 			// Expected values basicFetcher will be set to
@@ -114,7 +114,7 @@ describe('BasicFetcher', function() {
 			};
 			var requestSettings = 'requestSettings';
 
-			// Expected arguments to be passed to Composer.init
+			// Expected arguments to be passed to Fetcher.init
 			const expectedCrawler = crawler;
 
 			// Expected values basicFetcher will be set to
@@ -125,6 +125,48 @@ describe('BasicFetcher', function() {
 			// Validation
 			this.validate(basicFetcher, crawler, options, requestSettings,
 				expectedCrawler, expectedMaxAttempts, expectedRetryDelay, expectedMaxConcurrentRequests);
+		});
+		it('should initialize BasicFetcher instance with default parameters and then fails to initialze the parameters again', function() {
+			// Object set-up
+			var basicFetcher = {};
+
+			// Input arguments
+			var crawler = 'crawler';
+			var options = 'options';
+			var requestSettings = 'requestSettings';
+
+			// Expected arguments to be passed to Fetcher.init
+			const expectedCrawler = crawler;
+
+			// Expected values basicFetcher will be set to
+			const expectedMaxAttempts = 10;
+			const expectedRetryDelay = 5000;
+			const expectedMaxConcurrentRequests = 100;
+			const expectedActiveRequest = 1;
+			const expectedTotalBytesFetched = 1;
+
+			// Validation
+			this.validate(basicFetcher, crawler, options, requestSettings,
+				expectedCrawler, expectedMaxAttempts, expectedRetryDelay, expectedMaxConcurrentRequests);
+
+			// Specific validation pre-conditions
+			basicFetcher.activeRequests++;
+			basicFetcher.totalBytesFetched++;
+			BasicFetcher.init.call(basicFetcher, crawler, options, requestSettings);
+
+			// Specific validation
+			sinon.assert.calledTwice(BasicFetcher.init);
+			sinon.assert.calledWithExactly(BasicFetcher.init, crawler, options, requestSettings);
+			sinon.assert.calledTwice(Fetcher.init);
+			sinon.assert.calledWithExactly(Fetcher.init, expectedCrawler);
+			basicFetcher.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
+			basicFetcher.should.have.property('maxAttempts').and.to.equal(expectedMaxAttempts);
+			basicFetcher.should.have.property('retryDelay').and.to.equal(expectedRetryDelay);
+			basicFetcher.should.have.property('maxConcurrentRequests').and.to.equal(expectedMaxConcurrentRequests);
+			basicFetcher.should.have.property('fetchedUris').and.to.be.instanceof(Array).and.to.be.empty;
+			basicFetcher.should.have.property('pendingRequests').and.to.be.instanceof(Array).and.to.be.empty;
+			basicFetcher.should.have.property('activeRequests').and.to.equal(expectedActiveRequest);
+			basicFetcher.should.have.property('totalBytesFetched').and.to.equal(expectedTotalBytesFetched);
 		});
 	});
 	describe('#logic()', function() {
