@@ -9,9 +9,12 @@ var util          = require('util');
 var chai          = require('chai'),
 	chai_things   = require('chai-things'),
 	sinon         = require('sinon'),
-	request       = require('request');
+	request       = require('request'),
+	iconv         = require('iconv-lite');
 
-var requestGetStub = sinon.stub(request, 'get');
+var requestGetStub  = sinon.stub(request, 'get');
+var iconvDecodeStub = sinon.stub(iconv, 'decode');
+var iconvEncodingExistsStub = sinon.stub(iconv, 'encodingExists');
 
 // lib modules
 require('./spec_helper');
@@ -265,7 +268,7 @@ describe('BasicFetcher', function() {
 			this.validate(basicFetcher, resource, callback,
 				expectedError, true);
 		});
-		it('should create a resource request', function() {
+		it('should create a resource request successfully', function() {
 			// Object set-up
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
@@ -645,7 +648,7 @@ describe('BasicFetcher', function() {
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isMimeTypeAllowed').returns(true);
 			this.sinon.stub(PolicyChecker.prototype, 'isFileSizeAllowed').returns(true);
-			this.sinon.stub(basicFetcher, 'decodeBuffer').returns(body);
+			this.sinon.stub(basicFetcher, 'decodeBuffer').returns('body');
 
 			// Validation
 			this.validate(basicFetcher, error, response, body, resource, callback,
@@ -744,7 +747,8 @@ describe('BasicFetcher', function() {
 			const expectedDeocdedBuffer = util.format('<head>\t<meta charset="%s">%s</head>', expectedCharset, require('os').EOL);
 
 			// Spies, Stubs, Mocks
-			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: expectedCharset, addCharsetMetaTag: true });
+			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: 'utf-8', addCharsetMetaTag: true });
+			iconvDecodeStub.returns('<head></head>');
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
@@ -766,7 +770,8 @@ describe('BasicFetcher', function() {
 			const expectedDeocdedBuffer = buffer;
 
 			// Spies, Stubs, Mocks
-			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: expectedCharset, addCharsetMetaTag: false });
+			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: 'utf-8', addCharsetMetaTag: false });
+			iconvDecodeStub.returns('<head></head>');
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
@@ -798,6 +803,9 @@ describe('BasicFetcher', function() {
 			// Expected return value by decodeBuffer()
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
 
+			// Spies, Stubs, Mocks
+			iconvEncodingExistsStub.returns(true);
+
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,
 				expectedResult);
@@ -813,6 +821,9 @@ describe('BasicFetcher', function() {
 			// Expected return value by decodeBuffer()
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: false };
 
+			// Spies, Stubs, Mocks
+			iconvEncodingExistsStub.returns(true);
+
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,
 				expectedResult);
@@ -827,6 +838,9 @@ describe('BasicFetcher', function() {
 
 			// Expected return value by decodeBuffer()
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
+
+			// Spies, Stubs, Mocks
+			iconvEncodingExistsStub.returns(false);
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,
