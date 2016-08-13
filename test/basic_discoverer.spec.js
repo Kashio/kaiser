@@ -6,27 +6,23 @@
 var util          = require('util');
 
 // npm modules
-var chai          = require('chai'),
-	chai_things   = require('chai-things'),
-	sinon         = require('sinon'),
-	async         = require('async'),
-	URI           = require('urijs');
-
-var asyncWaterfallStub = sinon.stub(async, 'waterfall');
+var chai             = require('chai'),
+	chai_things      = require('chai-things'),
+	sinon            = require('sinon'),
+	URI              = require('urijs');
 
 // lib modules
 require('./spec_helper');
 
-var helpers       = require('../lib/helpers'),
-	kaiser        = require('../index'),
-	Crawler       = require('../lib/crawler'),
-	Resource      = require('../lib/resource'),
-	PolicyChecker = require('../lib/policy_checker');
+var helpers          = require('../lib/helpers'),
+	kaiser           = require('../index'),
+	Crawler          = require('../lib/crawler'),
+	Resource         = require('../lib/resource'),
+	PolicyChecker    = require('../lib/policy_checker');
 
 var helpersNormalizeUriStub = sinon.stub(helpers, 'normalizeUri');
-var helpersIsEmptyStub = sinon.stub(helpers, 'isEmpty');
 
-var Discoverer    = kaiser.Discoverer,
+var Discoverer       = kaiser.Discoverer,
 	BasicDiscoverer  = kaiser.BasicDiscoverer;
 
 chai.should();
@@ -112,14 +108,14 @@ describe('BasicDiscoverer', function() {
 	describe('#logic()', function() {
 		before(function () {
 			this.validate = function (basicDiscoverer, resource, callback,
-			                          expectedError, expectedResource, expectedResult) {
+			                          expectedError, expectedResource, expectedUris) {
 				basicDiscoverer.logic(resource, callback);
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.logic);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.logic, resource, callback);
 				sinon.assert.calledOnce(callback);
-				if (expectedResult) {
-					sinon.assert.calledWithExactly(callback, expectedError, expectedResource, expectedResult);
+				if (expectedUris) {
+					sinon.assert.calledWithExactly(callback, expectedError, expectedResource, expectedUris);
 				} else {
 					sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
 				}
@@ -184,8 +180,7 @@ describe('BasicDiscoverer', function() {
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
 			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
-			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris');
-			asyncWaterfallStub.yields(null, []);
+			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris').returns([]);
 
 			// Validation
 			this.validate(basicDiscoverer, resource, callback,
@@ -203,11 +198,13 @@ describe('BasicDiscoverer', function() {
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
 			var expectedResource = resource;
-			const expectedResult = ['http://www.google.com'];
+			const expectedResult = [new URI('http://www.google.com')];
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
-			asyncWaterfallStub.yields(null, ['http://www.google.com']);
+			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
+			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
+			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris').returns([new URI('http://www.google.com')]);
 			this.sinon.stub(Crawler.prototype, 'crawl');
 
 			// Validation
@@ -224,14 +221,12 @@ describe('BasicDiscoverer', function() {
 	});
 	describe('#getUris()', function() {
 		before(function () {
-			this.validate = function (basicDiscoverer, resource, callback,
-			                          expectedError, expectedResource, expectedUris) {
-				basicDiscoverer.getUris(resource, callback);
+			this.validate = function (basicDiscoverer, resource, expectedUris) {
+				basicDiscoverer.getUris(resource);
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.getUris);
-				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.getUris, resource, callback);
-				sinon.assert.calledOnce(callback);
-				sinon.assert.calledWithExactly(callback, expectedError, expectedResource, expectedUris);
+				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.getUris, resource);
+				BasicDiscoverer.prototype.getUris.returned(expectedUris);
 			};
 		});
 		beforeEach(function () {
@@ -244,28 +239,23 @@ describe('BasicDiscoverer', function() {
 			// Input arguments
 			var resource = Resource.instance('https://www.google.com', null);
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
-			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
-			const expectedError = null;
-			const expectedResource = resource;
 			const expectedUris = ['http://www.google.com'];
 
 			// Validation
-			this.validate(basicDiscoverer, resource, callback,
-				expectedError, expectedResource, expectedUris);
+			this.validate(basicDiscoverer, resource, expectedUris);
 		});
 	});
 	describe('#formatUris()', function() {
 		before(function () {
-			this.validate = function (basicDiscoverer, resource, uris, callback,
-			                          expectedError, expectedUris) {
-				basicDiscoverer.formatUris(resource, uris, callback);
+			this.validate = function (basicDiscoverer, resource, uris,
+			                          expectedUris) {
+				basicDiscoverer.formatUris(resource, uris);
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.formatUris);
-				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.formatUris, resource, uris, callback);
-				sinon.assert.calledOnce(callback);
-				sinon.assert.calledWithExactly(callback, expectedError, expectedUris);
+				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.formatUris, resource, uris);
+				BasicDiscoverer.prototype.formatUris.returned(expectedUris);
 			};
 		});
 		beforeEach(function () {
@@ -279,18 +269,16 @@ describe('BasicDiscoverer', function() {
 			var resource = Resource.instance('https://www.google.com', null);
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
 			var uris = ['http://www.google.com'];
-			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
-			const expectedError = null;
 			const expectedUris = [new URI('http://google.com/')];
 
 			// Spies, Stubs, Mocks
 			helpersNormalizeUriStub.returns(new URI('http://google.com/'));
 
 			// Validation
-			this.validate(basicDiscoverer, resource, uris, callback,
-				expectedError, expectedUris);
+			this.validate(basicDiscoverer, resource, uris,
+				expectedUris);
 		});
 		it('should format uris successfully while emitting discovererror due to malformed uri', function () {
 			// Object set-up
@@ -301,10 +289,8 @@ describe('BasicDiscoverer', function() {
 			var resource = Resource.instance('https://www.google.com', null);
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
 			var uris = ['http://www.google.com'];
-			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
-			const expectedError = null;
 			const expectedUris = [];
 
 			// Expected values to be passed to the 'discovererror` event spy
@@ -320,8 +306,8 @@ describe('BasicDiscoverer', function() {
 			basicDiscoverer.crawler.on('discovererror', discoverErrorEventSpy);
 
 			// Validation
-			this.validate(basicDiscoverer, resource, uris, callback,
-				expectedError, expectedUris);
+			this.validate(basicDiscoverer, resource, uris,
+				expectedUris);
 
 			// Specific validation
 			sinon.assert.calledOnce(discoverErrorEventSpy);
@@ -330,14 +316,12 @@ describe('BasicDiscoverer', function() {
 	});
 	describe('#filterUris()', function() {
 		before(function () {
-			this.validate = function (basicDiscoverer, uris, callback,
-			                          expectedError, expectedUris) {
-				basicDiscoverer.filterUris(uris, callback);
+			this.validate = function (basicDiscoverer, uris, expectedUris) {
+				basicDiscoverer.filterUris(uris);
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.filterUris);
-				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterUris, uris, callback);
-				sinon.assert.calledOnce(callback);
-				sinon.assert.calledWithExactly(callback, expectedError, expectedUris);
+				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterUris, uris);
+				BasicDiscoverer.prototype.filterUris.returned(expectedUris);
 			};
 		});
 		beforeEach(function () {
@@ -349,10 +333,8 @@ describe('BasicDiscoverer', function() {
 
 			// Input arguments
 			var uris = [new URI('http://google.com/')];
-			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
-			const expectedError = null;
 			const expectedUris = [new URI('http://google.com/')];
 
 			// Spies, Stubs, Mocks
@@ -361,8 +343,7 @@ describe('BasicDiscoverer', function() {
 			this.sinon.stub(basicDiscoverer, 'filterDuplicatedUris').returns([new URI('http://google.com/')]);
 
 			// Validation
-			this.validate(basicDiscoverer, uris, callback,
-				expectedError, expectedUris);
+			this.validate(basicDiscoverer, uris, expectedUris);
 		});
 	});
 	describe('#filterPolicyCheckNotPassingUris()', function() {
