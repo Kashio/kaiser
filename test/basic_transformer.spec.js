@@ -8,7 +8,10 @@ var util          = require('util');
 // npm modules
 var chai             = require('chai'),
 	chai_things      = require('chai-things'),
-	sinon            = require('sinon');
+	sinon            = require('sinon'),
+	URI              = require('urijs');
+
+var uriIsStub = sinon.stub(URI.prototype, 'is');
 
 // lib modules
 require('./spec_helper');
@@ -18,6 +21,8 @@ var helpers          = require('../lib/helpers'),
 	Crawler          = require('../lib/crawler'),
 	Resource         = require('../lib/resource'),
 	PolicyChecker    = require('../lib/policy_checker');
+
+var helpersIsEmptyStub = sinon.stub(helpers, 'isEmpty');
 
 var Transformer      = kaiser.Transformer,
 	BasicTransformer = kaiser.BasicTransformer;
@@ -115,48 +120,24 @@ describe('BasicTransformer', function() {
 			basicTransformer.should.have.property('rewriteLinksFileTypes', expectedRewriteLinksFileTypes);
 		});
 	});
-	describe.skip('#logic()', function() {
+	describe('#logic()', function() {
 		before(function () {
-			this.validate = function (basicDiscoverer, resource, callback,
-			                          expectedError, expectedResource, expectedResult) {
-				basicDiscoverer.logic(resource, callback);
+			this.validate = function (basicTransformer, resource, callback,
+			                          expectedError, expectedResource) {
+				basicTransformer.logic(resource, callback);
 
-				sinon.assert.calledOnce(BasicDiscoverer.prototype.logic);
-				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.logic, resource, callback);
+				sinon.assert.calledOnce(BasicTransformer.prototype.logic);
+				sinon.assert.calledWithExactly(BasicTransformer.prototype.logic, resource, callback);
 				sinon.assert.calledOnce(callback);
-				if (expectedResult) {
-					sinon.assert.calledWithExactly(callback, expectedError, expectedResource, expectedResult);
-				} else {
-					sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
-				}
+				sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
 			};
 		});
 		beforeEach(function () {
-			this.sinon.spy(BasicDiscoverer.prototype, 'logic');
+			this.sinon.spy(BasicTransformer.prototype, 'logic');
 		});
-		it('should fail to discover more resources because `crawler.isStopping` is set', function() {
+		it('should fail to transform a resource because it can\'t be transformed', function() {
 			// Object set-up
-			var basicDiscoverer = new BasicDiscoverer({
-				isStopping: true
-			}, {}, {});
-
-			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
-			var callback = this.sinon.spy();
-
-			// Expected arguments to be passed to the callback
-			const expectedError = null;
-			const expectedResource = resource;
-
-			// Validation
-			this.validate(basicDiscoverer, resource, callback,
-				expectedError, expectedResource);
-		});
-		it('should fail to discover more resources because resource is not permitted by policy checker allowed depth check', function() {
-			// Object set-up
-			var basicDiscoverer = new BasicDiscoverer({
-				isStopping: true
-			}, {}, {});
+			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
 			var resource = Resource.instance('https://www.google.com', null);
@@ -167,15 +148,15 @@ describe('BasicTransformer', function() {
 			const expectedResource = resource;
 
 			// Spies, Stubs, Mocks
-			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(false);
+			this.sinon.stub(BasicTransformer.prototype, 'canTransform').returns(false);
 
 			// Validation
-			this.validate(basicDiscoverer, resource, callback,
+			this.validate(basicTransformer, resource, callback,
 				expectedError, expectedResource);
 		});
-		it('should fail to discover more resources because no resources are found', function() {
+		it('should transform a resource sucessfully', function() {
 			// Object set-up
-			var basicDiscoverer = new BasicDiscoverer({}, {}, {});
+			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
 			var resource = Resource.instance('https://www.google.com', null);
@@ -184,48 +165,257 @@ describe('BasicTransformer', function() {
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
 			const expectedResource = resource;
-			const expectedResult = [];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(BasicTransformer.prototype, 'canTransform').returns(true);
+			this.sinon.stub(BasicTransformer.prototype, 'populateUriArrays').returns();
+			this.sinon.stub(BasicTransformer.prototype, 'replaceResourceContent').returns();
+
+			// Validation
+			this.validate(basicTransformer, resource, callback,
+				expectedError, expectedResource);
+		});
+	});
+	describe('#canTransform()', function() {
+		before(function () {
+			this.validate = function (basicTransformer, resource, expectedReturnValue) {
+				basicTransformer.canTransform(resource);
+
+				sinon.assert.calledOnce(BasicTransformer.prototype.canTransform);
+				sinon.assert.calledWithExactly(BasicTransformer.prototype.canTransform, resource);
+				BasicTransformer.prototype.canTransform.returned(expectedReturnValue);
+			};
+		});
+		beforeEach(function () {
+			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
+		});
+		it('should allow a resource with no file in the url to be transformed', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {
+				rewriteLinksFileTypes: [
+					'txt'
+				]
+			});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+
+			// Expected return value by canTransform()
+			const expectedReturnValue = true;
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
-			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
-			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
-			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris');
-			asyncWaterfallStub.yields(null, []);
+			helpersIsEmptyStub.returns(true);
 
 			// Validation
-			this.validate(basicDiscoverer, resource, callback,
-				expectedError, expectedResource, expectedResult);
+			this.validate(basicTransformer, resource, expectedReturnValue);
 		});
-		it('should discover more resources successfully', function() {
+		it('should allow a resource with file in the url to be transformed', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {
+				rewriteLinksFileTypes: [
+					'txt'
+				]
+			});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com/file.txt', null);
+
+			// Expected return value by canTransform()
+			const expectedReturnValue = true;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
+			helpersIsEmptyStub.returns(false);
+
+			// Validation
+			this.validate(basicTransformer, resource, expectedReturnValue);
+		});
+	});
+	describe('#populateUriArrays()', function() {
+		before(function () {
+			this.validate = function (basicTransformer, resource, fetchedUris, notFetchedUris,
+			                          expectedFetchedUris, expectedNotFetchedUris) {
+				basicTransformer.populateUriArrays(resource, fetchedUris, notFetchedUris);
+
+				sinon.assert.calledOnce(BasicTransformer.prototype.populateUriArrays);
+				sinon.assert.calledWithExactly(BasicTransformer.prototype.populateUriArrays, resource, fetchedUris, notFetchedUris);
+				fetchedUris.should.be.deep.equal(expectedFetchedUris);
+				notFetchedUris.should.be.deep.equal(expectedNotFetchedUris);
+			};
+		});
+		beforeEach(function () {
+			this.sinon.spy(BasicTransformer.prototype, 'populateUriArrays');
+		});
+		it('should populate fetchedUris array', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var fetchedUris = [];
+			var notFetchedUris = [];
+
+			// Expected values
+			var urisDictionaryToReturnFromStub = [];
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			urisDictionaryToReturnFromStub[regex] = [];
+			var match = ' src="www.exmaple.com" >';
+			urisDictionaryToReturnFromStub[regex][match] = [];
+			urisDictionaryToReturnFromStub[regex][match].push(' src="');
+			urisDictionaryToReturnFromStub[regex][match].push('www.exmaple.com');
+			urisDictionaryToReturnFromStub[regex][match].push('" >');
+			const expectedFetchedUris = [urisDictionaryToReturnFromStub[regex][match]];
+			const expectedNotFetchedUris = [];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
+			helpersIsEmptyStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
+			uriIsStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(true);
+
+			// Validation
+			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
+				expectedFetchedUris, expectedNotFetchedUris);
+		});
+		it('should populate notFetchedUris array', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var fetchedUris = [];
+			var notFetchedUris = [];
+
+			// Expected values
+			var urisDictionaryToReturnFromStub = [];
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			urisDictionaryToReturnFromStub[regex] = [];
+			var match = ' src="www.exmaple.com" >';
+			urisDictionaryToReturnFromStub[regex][match] = [];
+			urisDictionaryToReturnFromStub[regex][match].push(' src="');
+			urisDictionaryToReturnFromStub[regex][match].push('www.exmaple.com');
+			urisDictionaryToReturnFromStub[regex][match].push('" >');
+			const expectedFetchedUris = [];
+			const expectedNotFetchedUris = [urisDictionaryToReturnFromStub[regex][match]];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
+			helpersIsEmptyStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
+			uriIsStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(false);
+
+			// Validation
+			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
+				expectedFetchedUris, expectedNotFetchedUris);
+		});
+		it('should fail to populate any of the uris arrays because uri is empty', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var fetchedUris = [];
+			var notFetchedUris = [];
+
+			// Expected values
+			var urisDictionaryToReturnFromStub = [];
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			urisDictionaryToReturnFromStub[regex] = [];
+			var match = ' src="" >';
+			urisDictionaryToReturnFromStub[regex][match] = [];
+			urisDictionaryToReturnFromStub[regex][match].push(' src="');
+			urisDictionaryToReturnFromStub[regex][match].push('');
+			urisDictionaryToReturnFromStub[regex][match].push('" >');
+			const expectedFetchedUris = [];
+			const expectedNotFetchedUris = [];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
+			helpersIsEmptyStub.returns(true);
+
+			// Validation
+			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
+				expectedFetchedUris, expectedNotFetchedUris);
+		});
+		it('should fail to populate any of the uris arrays because uri is a urn', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var fetchedUris = [];
+			var notFetchedUris = [];
+
+			// Expected values
+			var urisDictionaryToReturnFromStub = [];
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			urisDictionaryToReturnFromStub[regex] = [];
+			var match = ' src="www.example.com" >';
+			urisDictionaryToReturnFromStub[regex][match] = [];
+			urisDictionaryToReturnFromStub[regex][match].push(' src="');
+			urisDictionaryToReturnFromStub[regex][match].push('www.example.com');
+			urisDictionaryToReturnFromStub[regex][match].push('" >');
+			const expectedFetchedUris = [];
+			const expectedNotFetchedUris = [];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
+			helpersIsEmptyStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
+			uriIsStub.returns(true);
+
+			// Validation
+			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
+				expectedFetchedUris, expectedNotFetchedUris);
+		});
+		it('should fail to populate any of the uris arrays because isUriAllowedByPolicyChecker() throws', function() {
 			// Object set-up
 			this.sinon.stub(Crawler, 'init');
-			var basicDiscoverer = new BasicDiscoverer(new Crawler({}), {}, {});
+			var basicTransformer = new BasicTransformer(new Crawler({}), {});
 
 			// Input arguments
 			var resource = Resource.instance('https://www.google.com', null);
-			var callback = this.sinon.spy();
+			var fetchedUris = [];
+			var notFetchedUris = [];
 
-			// Expected arguments to be passed to the callback
-			const expectedError = null;
-			var expectedResource = resource;
-			const expectedResult = ['http://www.google.com'];
+			// Expected values
+			var urisDictionaryToReturnFromStub = [];
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			urisDictionaryToReturnFromStub[regex] = [];
+			var match = ' src="www.example.com" >';
+			urisDictionaryToReturnFromStub[regex][match] = [];
+			urisDictionaryToReturnFromStub[regex][match].push(' src="');
+			urisDictionaryToReturnFromStub[regex][match].push('www.example.com');
+			urisDictionaryToReturnFromStub[regex][match].push('" >');
+			const expectedFetchedUris = [];
+			const expectedNotFetchedUris = [];
+
+			// Expected values to be passed to the 'transformerror` event spy
+			const expectedEventResource = resource;
+			const expectedEventUri = 'www.example.com';
+			const expectedEventError = new Error('oops');
 
 			// Spies, Stubs, Mocks
-			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
-			asyncWaterfallStub.yields(null, ['http://www.google.com']);
-			this.sinon.stub(Crawler.prototype, 'crawl');
-
-			// Validation
-			this.validate(basicDiscoverer, resource, callback,
-				expectedError, expectedResource, expectedResult);
+			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
+			helpersIsEmptyStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
+			uriIsStub.returns(false);
+			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').throws(new Error('oops'));
 
 			// Specific validation pre-conditions
-			delete expectedResource.originator;
+			var transformErrorEventSpy = this.sinon.spy();
+			basicTransformer.crawler.on('transformerror', transformErrorEventSpy);
+
+			// Validation
+			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
+				expectedFetchedUris, expectedNotFetchedUris);
 
 			// Specific validation
-			sinon.assert.calledOnce(Crawler.prototype.crawl);
-			sinon.assert.calledWithExactly(Crawler.prototype.crawl, expectedResult, expectedResource);
+			sinon.assert.calledOnce(transformErrorEventSpy);
+			sinon.assert.calledWithExactly(transformErrorEventSpy, expectedEventResource, expectedEventUri, expectedEventError);
 		});
 	});
 });
