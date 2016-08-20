@@ -66,13 +66,12 @@ describe('BasicTransformer', function() {
 				sinon.assert.calledWithExactly(BasicTransformer.init, crawler, options);
 				sinon.assert.calledOnce(Transformer.init);
 				sinon.assert.calledWithExactly(Transformer.init, expectedCrawler);
-				basicTransformer.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 				basicTransformer.should.have.property('rewriteLinksFileTypes', expectedRewriteLinksFileTypes);
 			};
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicTransformer, 'init');
-			this.sinon.spy(Transformer, 'init'); // Not a stub because we want Transformer.init() to initialize self.crawler to pass it to self.policyChecker
+			this.sinon.stub(Transformer, 'init');
 		});
 		it('should initialize BasicTransformer instance with default parameters', function() {
 			// Object set-up
@@ -114,7 +113,6 @@ describe('BasicTransformer', function() {
 			sinon.assert.calledWithExactly(BasicTransformer.init, crawler, options);
 			sinon.assert.calledTwice(Transformer.init);
 			sinon.assert.calledWithExactly(Transformer.init, expectedCrawler);
-			basicTransformer.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 			basicTransformer.should.have.property('rewriteLinksFileTypes', expectedRewriteLinksFileTypes);
 		});
 	});

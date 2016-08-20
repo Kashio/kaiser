@@ -69,7 +69,6 @@ describe('BasicFetcher', function() {
 				sinon.assert.calledWithExactly(BasicFetcher.init, crawler, options, requestSettings);
 				sinon.assert.calledOnce(Fetcher.init);
 				sinon.assert.calledWithExactly(Fetcher.init, expectedCrawler);
-				basicFetcher.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 				basicFetcher.should.have.property('maxAttempts').and.to.equal(expectedMaxAttempts);
 				basicFetcher.should.have.property('retryDelay').and.to.equal(expectedRetryDelay);
 				basicFetcher.should.have.property('maxConcurrentRequests').and.to.equal(expectedMaxConcurrentRequests);
@@ -81,7 +80,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher, 'init');
-			this.sinon.spy(Fetcher, 'init'); // Not a stub because we want Fetcher.init() to initialize self.crawler to pass it to self.policyChecker
+			this.sinon.stub(Fetcher, 'init');
 		});
 		it('should initialize BasicFetcher instance with default parameters', function() {
 			// Object set-up
@@ -162,7 +161,6 @@ describe('BasicFetcher', function() {
 			sinon.assert.calledWithExactly(BasicFetcher.init, crawler, options, requestSettings);
 			sinon.assert.calledTwice(Fetcher.init);
 			sinon.assert.calledWithExactly(Fetcher.init, expectedCrawler);
-			basicFetcher.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 			basicFetcher.should.have.property('maxAttempts').and.to.equal(expectedMaxAttempts);
 			basicFetcher.should.have.property('retryDelay').and.to.equal(expectedRetryDelay);
 			basicFetcher.should.have.property('maxConcurrentRequests').and.to.equal(expectedMaxConcurrentRequests);

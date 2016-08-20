@@ -59,12 +59,11 @@ describe('BasicDiscoverer', function() {
 				sinon.assert.calledWithExactly(BasicDiscoverer.init, crawler);
 				sinon.assert.calledOnce(Discoverer.init);
 				sinon.assert.calledWithExactly(Discoverer.init, expectedCrawler);
-				basicDiscoverer.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 			};
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicDiscoverer, 'init');
-			this.sinon.spy(Discoverer, 'init'); // Not a stub because we want Discoverer.init() to initialize self.crawler to pass it to self.policyChecker
+			this.sinon.stub(Discoverer, 'init');
 		});
 		it('should initialize BasicDiscoverer instance with default parameters', function() {
 			// Object set-up
@@ -100,7 +99,6 @@ describe('BasicDiscoverer', function() {
 			sinon.assert.calledWithExactly(BasicDiscoverer.init, crawler);
 			sinon.assert.calledTwice(Discoverer.init);
 			sinon.assert.calledWithExactly(Discoverer.init, expectedCrawler);
-			basicDiscoverer.should.have.property('policyChecker').and.to.be.instanceof(PolicyChecker).and.to.have.property('crawler', crawler);
 		});
 	});
 	describe('#logic()', function() {
