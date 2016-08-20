@@ -20,8 +20,6 @@ var helpers          = require('../lib/helpers'),
 	Resource         = require('../lib/resource'),
 	PolicyChecker    = require('../lib/policy_checker');
 
-var helpersNormalizeUriStub = sinon.stub(helpers, 'normalizeUri');
-
 var Discoverer       = kaiser.Discoverer,
 	BasicDiscoverer  = kaiser.BasicDiscoverer;
 
@@ -260,6 +258,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'formatUris');
+			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
 		});
 		it('should format uris successfully', function () {
 			// Object set-up
@@ -274,7 +273,7 @@ describe('BasicDiscoverer', function() {
 			const expectedUris = [new URI('http://google.com/')];
 
 			// Spies, Stubs, Mocks
-			helpersNormalizeUriStub.returns(new URI('http://google.com/'));
+			this.helpersNormalizeUriStub.returns(new URI('http://google.com/'));
 
 			// Validation
 			this.validate(basicDiscoverer, resource, uris,
@@ -299,7 +298,7 @@ describe('BasicDiscoverer', function() {
 			const expectedEventError = new Error('oops');
 
 			// Spies, Stubs, Mocks
-			helpersNormalizeUriStub.throws( new Error('oops'));
+			this.helpersNormalizeUriStub.throws( new Error('oops'));
 
 			// Specific validation pre-conditions
 			var discoverErrorEventSpy = this.sinon.spy();
@@ -391,6 +390,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterAnchors');
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 		});
 		it('should filter uris by anchors successfully', function () {
 			// Object set-up
@@ -403,7 +403,7 @@ describe('BasicDiscoverer', function() {
 			const expectedUris = [new URI('http://google.com/')];
 
 			// Spies, Stubs, Mocks
-			helpersNormalizeUriStub.returns(true);
+			this.helpersIsEmptyStub.returns(true);
 
 			// Validation
 			this.validate(basicDiscoverer, uris, expectedUris);
