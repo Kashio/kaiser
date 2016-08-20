@@ -65,8 +65,7 @@ describe('BasicComposer', function() {
 			const expectedCrawler = crawler;
 
 			// Validation
-			this.validate(basicComposer, crawler,
-				expectedCrawler);
+			this.validate(basicComposer, crawler, expectedCrawler);
 		});
 	});
 	describe('#logic()', function() {
