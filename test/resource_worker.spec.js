@@ -30,6 +30,7 @@ describe('ResourceWorker', function() {
 			this.validate = function(resourceWorker, crawler, workType,
 			                         expectedCrawler) {
 				ResourceWorker.init.call(resourceWorker, crawler, workType);
+
 				sinon.assert.calledOnce(CrawlerReferencer.init);
 				sinon.assert.calledWithExactly(CrawlerReferencer.init, expectedCrawler);
 			};
@@ -80,6 +81,7 @@ describe('ResourceWorker', function() {
 			this.validate = function(resourceWorker, resource, workExtraArgs, expectedError, expectedContinuationValue) {
 				var arguments = [resource].concat(workExtraArgs);
 				ResourceWorker.prototype.work.apply(resourceWorker, arguments);
+
 				sinon.assert.calledOnce(resourceWorker.work);
 				sinon.assert.calledWithExactly.apply(sinon.assert, [resourceWorker.work].concat(arguments));
 				sinon.assert.calledOnce(this.endWorkCallback);
