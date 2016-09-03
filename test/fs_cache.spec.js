@@ -6,8 +6,14 @@
 var chai        = require('chai'),
 	expect      = require('chai').expect,
 	sinon       = require('sinon'),
-	path        = require('path'),
-	nodefs      = require('node-fs');
+	nodefs      = require('node-fs'),
+	fspvr       = require('fspvr'),
+	iconv       = require('iconv-lite'),
+	URI         = require('urijs');
+
+// core modules
+var path        = require('path'),
+	fs          = require('fs');
 
 // lib modules
 require('./spec_helper');
@@ -129,6 +135,101 @@ describe('FsCache', function() {
 			expect(function() {
 				FsCache.init.call(fsCache, { rootDir: 5});
 			}).to.throw(TypeError, 'rootDir must be of type string');
+		});
+	});
+	describe('#logic()', function() {
+		before(function() {
+			this.validate = function(fsCache, resource, callback,
+			                         expectedError) {
+				fsCache.logic(resource, callback);
+
+				sinon.assert.calledOnce(FsCache.prototype.logic);
+				sinon.assert.calledWithExactly(FsCache.prototype.logic, resource, callback);
+				sinon.assert.calledOnce(callback);
+				sinon.assert.calledWithExactly(callback, expectedError);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(FsCache.prototype, 'logic');
+		});
+		it('should save a resource with known encoding in filesystem sucessfully', function() {
+			// Object set-up
+			var fsCache = new FsCache({}, { rootDir: 'websites' });
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			var callback = this.sinon.spy();
+
+			// Expected arguments to be passed to the callback
+			var expectedError = null;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(fsCache, 'tryMakeResourceDir').returns('websites/google.com');
+			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
+			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
+			this.sinon.stub(iconv, 'encodingExists').returns(true);
+			this.sinon.stub(iconv, 'encode').returns('buffer');
+			this.sinon.stub(fs, 'writeFile').yields(null);
+
+			// Validation
+			this.validate(fsCache, resource, callback,
+				expectedError);
+		});
+		it('should save a resource with unknown encoding in filesystem sucessfully', function() {
+			// Object set-up
+			var fsCache = new FsCache({}, { rootDir: 'websites' });
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+			resource,content = "buffer";
+			var callback = this.sinon.spy();
+
+			// Expected arguments to be passed to the callback
+			var expectedError = null;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(fsCache, 'tryMakeResourceDir').returns('websites/google.com');
+			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
+			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
+			this.sinon.stub(iconv, 'encodingExists').returns(false);
+			this.sinon.stub(fs, 'writeFile').yields(null);
+
+			// Validation
+			this.validate(fsCache, resource, callback,
+				expectedError);
+		});
+	});
+	describe('#tryMakeResourceDir()', function() {
+		before(function() {
+			this.validate = function(fsCache, resource, expectedResourceDir) {
+				fsCache.tryMakeResourceDir(resource);
+
+				sinon.assert.calledOnce(FsCache.prototype.tryMakeResourceDir);
+				sinon.assert.calledWithExactly(FsCache.prototype.tryMakeResourceDir, resource);
+				fsCache.tryMakeResourceDir.returned(expectedResourceDir);
+			};
+		});
+		beforeEach(function() {
+			this.sinon.spy(FsCache.prototype, 'tryMakeResourceDir');
+		});
+		it('should try to make resource directory sucessfully', function() {
+			// Object set-up
+			var fsCache = new FsCache({}, { rootDir: 'websites' });
+
+			// Input arguments
+			var resource = Resource.instance('https://www.google.com', null);
+
+			// Expected arguments to be passed to the callback
+			var expectedResourceDir = 'websites/google.com';
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
+			this.sinon.stub(URI, 'decode').returns('websites/google.com/index.html');
+			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
+			this.sinon.stub(nodefs, 'mkdirSync').onFirstCall().throws(new Error('oops'));
+
+			// Validation
+			this.validate(fsCache, resource, expectedResourceDir);
 		});
 	});
 });

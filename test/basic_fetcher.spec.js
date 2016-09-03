@@ -12,9 +12,7 @@ var chai          = require('chai'),
 	request       = require('request'),
 	iconv         = require('iconv-lite');
 
-var requestGetStub  = sinon.stub(request, 'get');
-var iconvDecodeStub = sinon.stub(iconv, 'decode');
-var iconvEncodingExistsStub = sinon.stub(iconv, 'encodingExists');
+var requestGetStub = sinon.stub(request, 'get');
 
 // lib modules
 require('./spec_helper');
@@ -716,6 +714,7 @@ describe('BasicFetcher', function() {
 	});
 	describe('#decodeBuffer()', function() {
 		before(function() {
+			this.iconvDecodeStub = this.sinon.stub(iconv, 'decode');
 			this.validate = function(basicFetcher, buffer, contentTypeHeader, resource,
 			                         expectedCharset, expectedDecodedBuffer) {
 				basicFetcher.decodeBuffer(buffer, contentTypeHeader, resource);
@@ -746,7 +745,7 @@ describe('BasicFetcher', function() {
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: 'utf-8', addCharsetMetaTag: true });
-			iconvDecodeStub.returns('<head></head>');
+			this.iconvDecodeStub.returns('<head></head>');
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
@@ -769,7 +768,7 @@ describe('BasicFetcher', function() {
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(BasicFetcher.prototype, 'getEncoding').returns({ encoding: 'utf-8', addCharsetMetaTag: false });
-			iconvDecodeStub.returns('<head></head>');
+			this.iconvDecodeStub.returns('<head></head>');
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader, resource,
@@ -778,6 +777,7 @@ describe('BasicFetcher', function() {
 	});
 	describe('#getEncoding()', function() {
 		before(function() {
+			this.iconvEncodingExistsStub = this.sinon.stub(iconv, 'encodingExists');
 			this.validate = function(basicFetcher, buffer, contentTypeHeader,
 			                         expectedResult) {
 				basicFetcher.getEncoding(buffer, contentTypeHeader);
@@ -802,7 +802,7 @@ describe('BasicFetcher', function() {
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
 
 			// Spies, Stubs, Mocks
-			iconvEncodingExistsStub.returns(true);
+			this.iconvEncodingExistsStub.returns(true);
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,
@@ -820,7 +820,7 @@ describe('BasicFetcher', function() {
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: false };
 
 			// Spies, Stubs, Mocks
-			iconvEncodingExistsStub.returns(true);
+			this.iconvEncodingExistsStub.returns(true);
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,
@@ -838,7 +838,7 @@ describe('BasicFetcher', function() {
 			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
 
 			// Spies, Stubs, Mocks
-			iconvEncodingExistsStub.returns(false);
+			this.iconvEncodingExistsStub.returns(false);
 
 			// Validation
 			this.validate(basicFetcher, buffer, contentTypeHeader,

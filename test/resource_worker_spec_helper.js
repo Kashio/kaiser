@@ -14,6 +14,6 @@ var ResourceWorker = require('../lib/resource_worker');
 
 module.exports = {
 	beforeEach: function() {
-		this.sinon.spy(ResourceWorker, 'init');
+		this.sinon.stub(ResourceWorker, 'init');
 	}
 };

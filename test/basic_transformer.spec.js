@@ -11,8 +11,6 @@ var chai             = require('chai'),
 	sinon            = require('sinon'),
 	URI              = require('urijs');
 
-var uriIsStub = sinon.stub(URI.prototype, 'is');
-
 // lib modules
 require('./spec_helper');
 
@@ -31,6 +29,7 @@ chai.use(chai_things);
 describe('BasicTransformer', function() {
 	describe('BasicTransformer()', function () {
 		before(function () {
+			this.sinon.stub(BasicTransformer, 'init');
 			this.validate = function (crawler, options,
 			                          expectedCrawler, expectedOptions) {
 				new BasicTransformer(crawler, options);
@@ -38,9 +37,6 @@ describe('BasicTransformer', function() {
 				sinon.assert.calledOnce(BasicTransformer.init);
 				sinon.assert.calledWithExactly(BasicTransformer.init, expectedCrawler, expectedOptions);
 			};
-		});
-		beforeEach(function () {
-			this.sinon.stub(BasicTransformer, 'init');
 		});
 		it('should construct BasicTransformer instance successfully', function () {
 			// Object set-up
@@ -174,6 +170,7 @@ describe('BasicTransformer', function() {
 	});
 	describe('#canTransform()', function() {
 		before(function () {
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicTransformer, resource, expectedReturnValue) {
 				basicTransformer.canTransform(resource);
 
@@ -184,7 +181,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 		});
 		it('should allow a resource with no file in the url to be transformed', function() {
 			// Object set-up
@@ -231,6 +227,8 @@ describe('BasicTransformer', function() {
 	});
 	describe('#populateUriArrays()', function() {
 		before(function () {
+			this.uriIsStub = sinon.stub(URI.prototype, 'is');
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicTransformer, resource, fetchedUris, notFetchedUris,
 			                          expectedFetchedUris, expectedNotFetchedUris) {
 				basicTransformer.populateUriArrays(resource, fetchedUris, notFetchedUris);
@@ -243,7 +241,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'populateUriArrays');
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 		});
 		it('should populate fetchedUris array', function() {
 			// Object set-up
@@ -270,7 +267,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
 			this.helpersIsEmptyStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
-			uriIsStub.returns(false);
+			this.uriIsStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(true);
 
 			// Validation
@@ -302,7 +299,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
 			this.helpersIsEmptyStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
-			uriIsStub.returns(false);
+			this.uriIsStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(false);
 
 			// Validation
@@ -363,7 +360,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
 			this.helpersIsEmptyStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
-			uriIsStub.returns(true);
+			this.uriIsStub.returns(true);
 
 			// Validation
 			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
@@ -400,7 +397,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
 			this.helpersIsEmptyStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
-			uriIsStub.returns(false);
+			this.uriIsStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').throws(new Error('oops'));
 
 			// Specific validation pre-conditions
@@ -480,6 +477,7 @@ describe('BasicTransformer', function() {
 	});
 	describe('#isUriAllowedByPolicyChecker()', function() {
 		before(function () {
+			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
 			this.validate = function (basicTransformer, resource, uriObj,
 			                          expectedReturnValue) {
 				basicTransformer.isUriAllowedByPolicyChecker(resource, uriObj);
@@ -491,7 +489,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriAllowedByPolicyChecker');
-			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
 			// Object set-up

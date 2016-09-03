@@ -2,9 +2,6 @@
  * Created by Roy on 12/08/2016.
  */
 
-// core modules
-var util          = require('util');
-
 // npm modules
 var chai             = require('chai'),
 	chai_things      = require('chai-things'),
@@ -378,6 +375,7 @@ describe('BasicDiscoverer', function() {
 	});
 	describe('#filterAnchors()', function() {
 		before(function () {
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicDiscoverer, uris, expectedUris) {
 				basicDiscoverer.filterAnchors(uris);
 
@@ -388,7 +386,6 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterAnchors');
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 		});
 		it('should filter uris by anchors successfully', function () {
 			// Object set-up
