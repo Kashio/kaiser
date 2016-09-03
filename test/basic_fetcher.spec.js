@@ -250,6 +250,9 @@ describe('BasicFetcher', function() {
 			const expectedCrawlerIsStopping = true;
 
 			// Spies, Stubs, Mocks
+			this.sinon.stub(PolicyChecker.prototype, 'isRobotsTxtAllowsResource').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(true);
 			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(true);
 
 			// Validation
@@ -273,6 +276,12 @@ describe('BasicFetcher', function() {
 
 			// Expected arguments to be passed to the callback
 			const expectedError = new Error('Fetch failed because resource was already fetched');
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(PolicyChecker.prototype, 'isRobotsTxtAllowsResource').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(false);
 
 			// Pre-conditions
 			basicFetcher.fetchedUris.push(resource.uri.toString());
@@ -304,6 +313,10 @@ describe('BasicFetcher', function() {
 
 			// Spies, Stubs, Mocks
 			var runRequestStub = this.sinon.stub(basicFetcher, 'runRequest');
+			this.sinon.stub(PolicyChecker.prototype, 'isRobotsTxtAllowsResource').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(false);
 
 			// Validation
 			this.validate(basicFetcher, resource, callback,

@@ -200,7 +200,7 @@ describe('BasicTransformer', function() {
 			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
-		it('should allow a resource with no file in the url to be transformed', function() {
+		it('should allow a resource with no file name in the url to be transformed', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {
 				rewriteLinksFileTypes: [
@@ -225,7 +225,7 @@ describe('BasicTransformer', function() {
 			// Validation
 			this.validate(basicTransformer, resource, expectedReturnValue);
 		});
-		it('should allow a resource with file in the url to be transformed', function() {
+		it('should allow a resource with a file name in the url to be transformed', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {
 				rewriteLinksFileTypes: [
@@ -235,7 +235,7 @@ describe('BasicTransformer', function() {
 
 			// Input arguments
 			var resource = {
-				uri: new URI('https://www.google.com'),
+				uri: new URI('https://www.google.com/file.txt'),
 				depth: 0,
 				originator: null
 			};
