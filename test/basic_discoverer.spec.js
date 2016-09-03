@@ -2,23 +2,25 @@
  * Created by Roy on 12/08/2016.
  */
 
+// core modules
+var EventEmitter             = require('events');
+
 // npm modules
-var chai             = require('chai'),
-	chai_things      = require('chai-things'),
-	sinon            = require('sinon'),
-	URI              = require('urijs');
+var chai                     = require('chai'),
+	chai_things              = require('chai-things'),
+	sinon                    = require('sinon'),
+	URI                      = require('urijs');
 
 // lib modules
 require('./spec_helper');
 
-var helpers          = require('../lib/helpers'),
-	kaiser           = require('../index'),
-	Crawler          = require('../lib/crawler'),
-	Resource         = require('../lib/resource'),
-	PolicyChecker    = require('../lib/policy_checker');
+var helpers                  = require('../lib/helpers'),
+	kaiser                   = require('../index'),
+	PolicyChecker            = require('../lib/policy_checker'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Discoverer       = kaiser.Discoverer,
-	BasicDiscoverer  = kaiser.BasicDiscoverer;
+var Discoverer               = kaiser.Discoverer,
+	BasicDiscoverer          = kaiser.BasicDiscoverer;
 
 chai.should();
 chai.use(chai_things);
@@ -41,7 +43,7 @@ describe('BasicDiscoverer', function() {
 			var crawler = 'crawler';
 
 			// Expected arguments to be passed to BasicDiscoverer.init
-			const expectedCrawler = crawler;
+			const expectedCrawler = 'crawler';
 
 			// Validation
 			this.validate(crawler, expectedCrawler);
@@ -70,7 +72,7 @@ describe('BasicDiscoverer', function() {
 			var crawler = 'crawler';
 
 			// Expected arguments to be passed to Discoverer.init
-			const expectedCrawler = crawler;
+			const expectedCrawler = 'crawler';
 
 			// Validation
 			this.validate(basicDiscoverer, crawler, expectedCrawler);
@@ -124,12 +126,20 @@ describe('BasicDiscoverer', function() {
 			}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			const expectedResource = resource;
+			const expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Validation
 			this.validate(basicDiscoverer, resource, callback,
@@ -142,12 +152,20 @@ describe('BasicDiscoverer', function() {
 			}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			const expectedResource = resource;
+			const expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(false);
@@ -161,12 +179,20 @@ describe('BasicDiscoverer', function() {
 			var basicDiscoverer = new BasicDiscoverer({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			const expectedResource = resource;
+			const expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			const expectedResult = [];
 
 			// Spies, Stubs, Mocks
@@ -181,16 +207,25 @@ describe('BasicDiscoverer', function() {
 		});
 		it('should discover more resources successfully', function() {
 			// Object set-up
-			this.sinon.stub(Crawler, 'init');
-			var basicDiscoverer = new BasicDiscoverer(new Crawler({}), {}, {});
+			var eventEmitter = new EventEmitter();
+			eventEmitter.__proto__.crawl = this.sinon.stub();
+			var basicDiscoverer = new BasicDiscoverer(eventEmitter, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			var expectedResource = resource;
+			var expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			const expectedResult = [new URI('http://www.google.com')];
 
 			// Spies, Stubs, Mocks
@@ -198,7 +233,6 @@ describe('BasicDiscoverer', function() {
 			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris').returns([new URI('http://www.google.com')]);
-			this.sinon.stub(Crawler.prototype, 'crawl');
 
 			// Validation
 			this.validate(basicDiscoverer, resource, callback,
@@ -208,8 +242,8 @@ describe('BasicDiscoverer', function() {
 			delete expectedResource.originator;
 
 			// Specific validation
-			sinon.assert.calledOnce(Crawler.prototype.crawl);
-			sinon.assert.calledWithExactly(Crawler.prototype.crawl, expectedResult, expectedResource);
+			sinon.assert.calledOnce(eventEmitter.crawl);
+			sinon.assert.calledWithExactly(eventEmitter.crawl, expectedResult, expectedResource);
 		});
 	});
 	describe('#getUris()', function() {
@@ -224,13 +258,18 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'getUris');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should get resource\'s uri successfully', function () {
 			// Object set-up
 			var basicDiscoverer = new BasicDiscoverer({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
 
 			// Expected arguments to be passed to the callback
@@ -260,7 +299,11 @@ describe('BasicDiscoverer', function() {
 			var basicDiscoverer = new BasicDiscoverer({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
 			var uris = ['http://www.google.com'];
 
@@ -276,11 +319,16 @@ describe('BasicDiscoverer', function() {
 		});
 		it('should format uris successfully while emitting discovererror due to malformed uri', function () {
 			// Object set-up
-			this.sinon.stub(Crawler, 'init');
-			var basicDiscoverer = new BasicDiscoverer(new Crawler({}), {}, {});
+			var eventEmitter = new EventEmitter();
+			eventEmitter.__proto__.crawl = this.sinon.stub();
+			var basicDiscoverer = new BasicDiscoverer(eventEmitter, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = '<head><body><p>http://www.google.com</p></body></head>';
 			var uris = ['http://www.google.com'];
 
@@ -288,12 +336,18 @@ describe('BasicDiscoverer', function() {
 			const expectedUris = [];
 
 			// Expected values to be passed to the 'discovererror` event spy
-			const expectedEventResource = resource;
+			var expectedEventResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+			expectedEventResource.content = '<head><body><p>http://www.google.com</p></body></head>';
 			const expectedEventUri = new URI('http://www.google.com/');
 			const expectedEventError = new Error('oops');
 
 			// Spies, Stubs, Mocks
-			this.helpersNormalizeUriStub.throws( new Error('oops'));
+			this.helpersNormalizeUriStub.throws(new Error('oops'));
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Specific validation pre-conditions
 			var discoverErrorEventSpy = this.sinon.spy();
@@ -320,6 +374,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterUris');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should filter uris successfully', function () {
 			// Object set-up
@@ -352,6 +407,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterPolicyCheckNotPassingUris');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should filter uris by policy checker successfully', function () {
 			// Object set-up
@@ -386,6 +442,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterAnchors');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should filter uris by anchors successfully', function () {
 			// Object set-up
@@ -416,6 +473,7 @@ describe('BasicDiscoverer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicDiscoverer.prototype, 'filterDuplicatedUris');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should filter duplicated uris successfully', function () {
 			// Object set-up

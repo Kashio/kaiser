@@ -3,26 +3,27 @@
  */
 
 // core modules
-var util          = require('util');
+var util                     = require('util');
 
 // npm modules
-var chai          = require('chai'),
-	chai_things   = require('chai-things'),
-	sinon         = require('sinon'),
-	request       = require('request'),
-	iconv         = require('iconv-lite');
+var chai                     = require('chai'),
+	chai_things              = require('chai-things'),
+	sinon                    = require('sinon'),
+	URI                      = require('urijs'),
+	request                  = require('request'),
+	iconv                    = require('iconv-lite');
 
-var requestGetStub = sinon.stub(request, 'get');
+var requestGetStub           = sinon.stub(request, 'get');
 
 // lib modules
 require('./spec_helper');
 
-var kaiser        = require('../index'),
-	Resource      = require('../lib/resource'),
-	PolicyChecker = require('../lib/policy_checker');
+var kaiser                   = require('../index'),
+	PolicyChecker            = require('../lib/policy_checker'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Fetcher       = kaiser.Fetcher,
-	BasicFetcher  = kaiser.BasicFetcher;
+var Fetcher                  = kaiser.Fetcher,
+	BasicFetcher             = kaiser.BasicFetcher;
 
 chai.should();
 chai.use(chai_things);
@@ -192,7 +193,11 @@ describe('BasicFetcher', function() {
 			}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -207,7 +212,11 @@ describe('BasicFetcher', function() {
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -227,7 +236,11 @@ describe('BasicFetcher', function() {
 			}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -251,7 +264,11 @@ describe('BasicFetcher', function() {
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -269,7 +286,11 @@ describe('BasicFetcher', function() {
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected values
@@ -306,6 +327,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'runRequest');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to run a request due to no `pendingRequests`', function() {
 			//Object set-up
@@ -382,6 +404,7 @@ describe('BasicFetcher', function() {
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'requestLoop');
 			this.sinon.stub(BasicFetcher.prototype, 'handleResponse');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to request a resource due to passing `attemptsLeft` count without error', function() {
 			// Object set-up
@@ -398,7 +421,7 @@ describe('BasicFetcher', function() {
 			const expectedError = new Error('No attempts to fetch the URL were made');
 			const expectedResponse = null;
 			const expectedBody = null;
-			const expectedResource = resource;
+			const expectedResource = null;
 			const expectedCallback = callback;
 
 			// Validation
@@ -420,7 +443,7 @@ describe('BasicFetcher', function() {
 			const expectedError = lastError;
 			const expectedResponse = null;
 			const expectedBody = null;
-			const expectedResource = resource;
+			const expectedResource = null;
 			const expectedCallback = callback;
 
 			// Validation
@@ -456,7 +479,11 @@ describe('BasicFetcher', function() {
 
 				// Input arguments
 				var attemptsLeft = 1;
-				var resource = Resource.instance('https://www.google.com', null);
+				var resource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
 				var options = { uri: resource.uri.toString() };
 				var callback = function() {};
 				var lastError = null;
@@ -466,7 +493,12 @@ describe('BasicFetcher', function() {
 				expectedError.code = 'ESOCKETTIMEDOUT';
 				const expectedResponse = null;
 				const expectedBody = null;
-				const expectedResource = resource;
+				var expectedResource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
+				expectedResource.uri.toString(); // build expectedResource.__proto__._string property
 				const expectedCallback = callback;
 
 				// Spies, Stubs, Mocks
@@ -487,7 +519,11 @@ describe('BasicFetcher', function() {
 
 				// Input arguments
 				var attemptsLeft = 1;
-				var resource = Resource.instance('https://www.google.com', null);
+				var resource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
 				var options = { uri: resource.uri.toString() };
 				var callback = function() {};
 				var lastError = null;
@@ -497,7 +533,12 @@ describe('BasicFetcher', function() {
 				expectedError.code = 500;
 				const expectedResponse = null;
 				const expectedBody = null;
-				const expectedResource = resource;
+				var expectedResource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
+				expectedResource.uri.toString(); // build expectedResource.__proto__._string property
 				const expectedCallback = callback;
 
 				// Spies, Stubs, Mocks
@@ -516,7 +557,11 @@ describe('BasicFetcher', function() {
 
 				// Input arguments
 				var attemptsLeft = 1;
-				var resource = Resource.instance('https://www.google.com', null);
+				var resource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
 				var options = { uri: resource.uri.toString() };
 				var callback = function() {};
 				var lastError = null;
@@ -525,7 +570,12 @@ describe('BasicFetcher', function() {
 				const expectedError = null;
 				const expectedResponse = { statusCode: 200 };
 				const expectedBody = 'body';
-				const expectedResource = resource;
+				var expectedResource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
+				expectedResource.uri.toString(); // build expectedResource.__proto__._string property
 				const expectedCallback = callback;
 
 				// Spies, Stubs, Mocks
@@ -544,7 +594,11 @@ describe('BasicFetcher', function() {
 
 				// Input arguments
 				var attemptsLeft = 1;
-				var resource = Resource.instance('https://www.google.com', null);
+				var resource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
 				var options = { uri: resource.uri.toString() };
 				var callback = function() {};
 				var lastError = null;
@@ -554,7 +608,12 @@ describe('BasicFetcher', function() {
 				expectedError.code = 101;
 				const expectedResponse = null;
 				const expectedBody = null;
-				const expectedResource = resource;
+				var expectedResource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
+				expectedResource.uri.toString(); // build expectedResource.__proto__._string property
 				const expectedCallback = callback;
 
 				// Spies, Stubs, Mocks
@@ -575,7 +634,11 @@ describe('BasicFetcher', function() {
 
 				// Input arguments
 				var attemptsLeft = 1;
-				var resource = Resource.instance('https://www.google.com', null);
+				var resource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
 				var options = { uri: resource.uri.toString() };
 				var callback = function() {};
 				var lastError = null;
@@ -585,7 +648,12 @@ describe('BasicFetcher', function() {
 				expectedError.code = 400;
 				const expectedResponse = null;
 				const expectedBody = null;
-				const expectedResource = resource;
+				var expectedResource = {
+					uri: new URI('https://www.google.com'),
+					depth: 0,
+					originator: null
+				};
+				expectedResource.uri.toString(); // build expectedResource.__proto__._string property
 				const expectedCallback = callback;
 
 				// Spies, Stubs, Mocks
@@ -619,6 +687,7 @@ describe('BasicFetcher', function() {
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'handleResponse');
 			this.sinon.stub(BasicFetcher.prototype, 'runRequest');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should handle response successfully', function() {
 			// Object set-up
@@ -628,13 +697,21 @@ describe('BasicFetcher', function() {
 			var error = null;
 			var response = { headers: {} };
 			var body = 'body';
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			var expectedResource = resource;
-			expectedResource.content = body;
+			var expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+			expectedResource.content = 'body';
 
 			// Expected values to set basicFetcher to
 			const expectedTotalBytesFetched = body.length;
@@ -662,7 +739,11 @@ describe('BasicFetcher', function() {
 			var error = null;
 			var response = { headers: {} };
 			var body = null;
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -692,7 +773,11 @@ describe('BasicFetcher', function() {
 			var error = new Error('oops');
 			var response = { headers: {} };
 			var body = null;
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -727,6 +812,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'decodeBuffer');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should decode a buffer and add charset meta-tag to it', function() {
 			// Object set-up
@@ -789,6 +875,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'getEncoding');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should get a buffer encoding and set the `addCharsetMetaTag` flag', function() {
 			// Object set-up

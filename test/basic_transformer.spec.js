@@ -3,25 +3,25 @@
  */
 
 // core modules
-var util          = require('util');
+var util                     = require('util'),
+	EventEmitter             = require('events');
 
 // npm modules
-var chai             = require('chai'),
-	chai_things      = require('chai-things'),
-	sinon            = require('sinon'),
-	URI              = require('urijs');
+var chai                     = require('chai'),
+	chai_things              = require('chai-things'),
+	sinon                    = require('sinon'),
+	URI                      = require('urijs');
 
 // lib modules
 require('./spec_helper');
 
-var helpers          = require('../lib/helpers'),
-	kaiser           = require('../index'),
-	Crawler          = require('../lib/crawler'),
-	Resource         = require('../lib/resource'),
-	PolicyChecker    = require('../lib/policy_checker');
+var helpers                  = require('../lib/helpers'),
+	kaiser                   = require('../index'),
+	PolicyChecker            = require('../lib/policy_checker'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Transformer      = kaiser.Transformer,
-	BasicTransformer = kaiser.BasicTransformer;
+var Transformer              = kaiser.Transformer,
+	BasicTransformer         = kaiser.BasicTransformer;
 
 chai.should();
 chai.use(chai_things);
@@ -126,18 +126,27 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'logic');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to transform a resource because it can\'t be transformed', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			const expectedResource = resource;
+			const expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(BasicTransformer.prototype, 'canTransform').returns(false);
@@ -151,12 +160,20 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
-			const expectedResource = resource;
+			const expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(BasicTransformer.prototype, 'canTransform').returns(true);
@@ -181,6 +198,7 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should allow a resource with no file in the url to be transformed', function() {
 			// Object set-up
@@ -191,7 +209,11 @@ describe('BasicTransformer', function() {
 			});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Expected return value by canTransform()
 			const expectedReturnValue = true;
@@ -212,7 +234,11 @@ describe('BasicTransformer', function() {
 			});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/file.txt', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Expected return value by canTransform()
 			const expectedReturnValue = true;
@@ -247,7 +273,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var fetchedUris = [];
 			var notFetchedUris = [];
 
@@ -269,6 +299,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
 			this.uriIsStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(true);
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
@@ -279,7 +310,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var fetchedUris = [];
 			var notFetchedUris = [];
 
@@ -301,6 +336,7 @@ describe('BasicTransformer', function() {
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
 			this.uriIsStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriAllowedByPolicyChecker').returns(false);
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
@@ -311,7 +347,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var fetchedUris = [];
 			var notFetchedUris = [];
 
@@ -330,6 +370,7 @@ describe('BasicTransformer', function() {
 			// Spies, Stubs, Mocks
 			this.sinon.stub(basicTransformer, 'createRegexUrisDictionary').returns(urisDictionaryToReturnFromStub);
 			this.helpersIsEmptyStub.returns(true);
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
@@ -340,7 +381,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var fetchedUris = [];
 			var notFetchedUris = [];
 
@@ -361,6 +406,7 @@ describe('BasicTransformer', function() {
 			this.helpersIsEmptyStub.returns(false);
 			this.sinon.stub(basicTransformer, 'isUriBlackListed').returns(false);
 			this.uriIsStub.returns(true);
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, fetchedUris, notFetchedUris,
@@ -368,11 +414,16 @@ describe('BasicTransformer', function() {
 		});
 		it('should fail to populate any of the uris arrays because isUriAllowedByPolicyChecker() throws', function() {
 			// Object set-up
-			this.sinon.stub(Crawler, 'init');
-			var basicTransformer = new BasicTransformer(new Crawler({}), {});
+			var eventEmitter = new EventEmitter();
+			eventEmitter.__proto__.crawl = this.sinon.stub();
+			var basicTransformer = new BasicTransformer(eventEmitter, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var fetchedUris = [];
 			var notFetchedUris = [];
 
@@ -426,13 +477,18 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'createRegexUrisDictionary');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should create regex uris dictionary successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = " src='www.exmaple.com' />";
 			var regex =/(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
 
@@ -460,6 +516,7 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriBlackListed');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a uri is black listed or not sucessfully', function() {
 			// Object set-up
@@ -489,13 +546,18 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriAllowedByPolicyChecker');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('http://www.example.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var uriObj = new URI('http://www.example.com');
 
 			// Expected return value by canTransform()
@@ -537,7 +599,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = " src='http://www.exmaple.com' />";
 			var matches = [];
 			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
@@ -554,6 +620,7 @@ describe('BasicTransformer', function() {
 			this.helpersCustomEscapeStringRegexp.onSecondCall().returns(' src=\'');
 			this.helpersCustomEscapeStringRegexp.onThirdCall().returns('\' \\/>');
 			this.helpersHtmlUriDecodeStub.returns('../exmaple.com/index.html');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, matches, regex, replaceCalculationFunction,
@@ -561,11 +628,16 @@ describe('BasicTransformer', function() {
 		});
 		it('should fail to replace resource content because String.prototype.replace() throws an error', function() {
 			// Object set-up
-			this.sinon.stub(Crawler, 'init');
-			var basicTransformer = new BasicTransformer(new Crawler({}), {});
+			var eventEmitter = new EventEmitter();
+			eventEmitter.__proto__.crawl = this.sinon.stub();
+			var basicTransformer = new BasicTransformer(eventEmitter, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = " src='http://www.exmaple.com' />";
 			var matches = [];
 			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
@@ -575,7 +647,12 @@ describe('BasicTransformer', function() {
 			var replaceCalculationFunction = this.sinon.stub();
 
 			// Expected values to be passed to the 'transformerror` event spy
-			const expectedEventResource = resource;
+			var expectedEventResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+			expectedEventResource.content = " src='http://www.exmaple.com' />";
 			const expectedEventUri = 'http:\\/\\/www.exmaple.com';
 			const expectedEventError = new Error('oops');
 
@@ -600,11 +677,16 @@ describe('BasicTransformer', function() {
 		});
 		it('should fail to replace resource content because uri and replace strings are equal', function() {
 			// Object set-up
-			this.sinon.stub(Crawler, 'init');
-			var basicTransformer = new BasicTransformer(new Crawler({}), {});
+			var eventEmitter = new EventEmitter();
+			eventEmitter.__proto__.crawl = this.sinon.stub();
+			var basicTransformer = new BasicTransformer(eventEmitter, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			resource.content = ' http://www.exmaple.com ';
 			var matches = [];
 			var regex = /(.{1,20})((?:(?:https?):\/\/)(?:\S+(?::\S*)?@)?(?:(?!10(?:\.\d{1,3}){3})(?!127(?:\.\d{1,3}){3})(?!169\.254(?:\.\d{1,3}){2})(?!192\.168(?:\.\d{1,3}){2})(?!172\.(?:1[6-9]|2\d|3[0-1])(?:\.\d{1,3}){2})(?:[1-9]\d?|1\d\d|2[01]\d|22[0-3])(?:\.(?:1?\d{1,2}|2[0-4]\d|25[0-5])){2}(?:\.(?:[1-9]\d?|1\d\d|2[0-4]\d|25[0-4]))|\[(?:(?:[\da-f]{1,4}:){7}[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,7}:|(?:[\da-f]{1,4}:){1,6}:[\da-f]{1,4}|(?:[\da-f]{1,4}:){1,5}(?::[\da-f]{1,4}){1,2}|(?:[\da-f]{1,4}:){1,4}(?::[\da-f]{1,4}){1,3}|(?:[\da-f]{1,4}:){1,3}(?::[\da-f]{1,4}){1,4}|(?:[\da-f]{1,4}:){1,2}(?::[\da-f]{1,4}){1,5}|[\da-f]{1,4}:(?:(?::[\da-f]{1,4}){1,6})|:(?:(?::[\da-f]{1,4}){1,7}|:)|fe80:(?::[\da-f]{0,4}){0,4}%[\da-z]+|::(?:ffff(?::0{1,4})?:)?(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d).){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d)|(?:[\da-f]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1?\d)?\d).){3}(?:25[0-5]|(?:2[0-4]|1?\d)?\d))\]|localhost|(?:xn--[a-z\d\-]{1,59}|(?:(?:[a-z\u00a1-\uffff\d]+(?:-[a-z\u00a1-\uffff\d]){0,62})))(?:\.(?:xn--[a-z\d\-]{1,59}|(?:[a-z\u00a1-\uffff\d]+(?:-[a-z\u00a1-\uffff\d]){0,62})))*(?:\.(?:xn--[a-z\d\-]{1,59}|(?:[a-z\u00a1-\uffff]{2,63}))))(?::\d{2,5})?(?:\/[^"'()<>\s]*)?)(.{1,20})/ig;
@@ -622,6 +704,7 @@ describe('BasicTransformer', function() {
 			this.helpersCustomEscapeStringRegexp.onThirdCall().returns(' ');
 			this.helpersHtmlUriDecodeStub.returns('http:\\/\\/www.exmaple.com');
 			this.sinon.stub(util, 'format').onSecondCall().returns('http:\\/\\/www.exmaple.com');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 
 			// Validation
 			this.validate(basicTransformer, resource, matches, regex, replaceCalculationFunction,
@@ -642,13 +725,18 @@ describe('BasicTransformer', function() {
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUris');
 			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should calculate replace portion of a fetched uri with value of / sucessfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var uri = '/';
 
 			// Expected return value by canTransform()
@@ -663,7 +751,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.example.com';
 
 			// Expected return value by canTransform()
@@ -681,7 +773,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/dir1/file.txt', null);
+			var resource = {
+				uri: new URI('https://www.google.com/dir1/file.txt'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.example.com';
 
 			// Expected return value by canTransform()
@@ -700,7 +796,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/dir1/file.txt', null);
+			var resource = {
+				uri: new URI('https://www.google.com/dir1/file.txt'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.example.com';
 
 			// Expected return value by canTransform()
@@ -718,7 +818,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
@@ -736,7 +840,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/dir2/home.html', null);
+			var resource = {
+				uri: new URI('https://www.google.com/dir2/home.html'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
@@ -754,7 +862,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/dir1/dir2/home.html', null);
+			var resource = {
+				uri: new URI('https://www.google.com/dir1/dir2/home.html'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
@@ -772,7 +884,11 @@ describe('BasicTransformer', function() {
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com/dir1/home.html', null);
+			var resource = {
+				uri: new URI('https://www.google.com/dir1/home.html'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
@@ -799,13 +915,18 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfNotFetchedUris');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
-			var resource = Resource.instance('http://www.example.com', null);
+			var resource = {
+				uri: new URI('https://www.example.com'),
+				depth: 0,
+				originator: null
+			};
 			var uri = 'http://www.example.com';
 
 			// Expected return value by canTransform()

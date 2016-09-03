@@ -3,17 +3,18 @@
  */
 
 // npm modules
-var sinon         = require('sinon'),
-    URI           = require('urijs');
+var sinon                    = require('sinon'),
+    URI                      = require('urijs');
 
 // lib modules
 require('./spec_helper');
 
-var kaiser        = require('../index'),
-	Resource      = require('../lib/resource');
+var kaiser                   = require('../index'),
+	Resource                 = require('../lib/resource'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var Composer      = kaiser.Composer,
-	BasicComposer = kaiser.BasicComposer;
+var Composer                 = kaiser.Composer,
+	BasicComposer            = kaiser.BasicComposer;
 
 describe('BasicComposer', function() {
 	describe('BasicComposer()', function() {
@@ -82,19 +83,25 @@ describe('BasicComposer', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicComposer.prototype, 'logic');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it ('should compose resources from an array', function() {
 			// Object set-up
 			var basicComposer = new BasicComposer();
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+
 			var callback = sinon.spy();
 			var uris = [[
 				'https://en.wikipedia.org/wiki/Main_Page',
 				'https://www.youtube.com/',
 				'https://www.npmjs.com/',
-				'https://www.google.com/doodles',
+				'https://www.facebook.com/doodles',
 				532,
 				{
 					url: 'https://nodejs.org/en/'
@@ -106,11 +113,36 @@ describe('BasicComposer', function() {
 			// Expected arguments to be passed to the callback
 			const expectedError = null;
 			const expectedResources = [
-				new Resource(new URI('https://en.wikipedia.org/wiki/Main_Page'), 0, resource),
-				new Resource(new URI('https://www.youtube.com/'), 0, resource),
-				new Resource(new URI('https://www.npmjs.com/'), 0, resource),
-				new Resource(new URI('https://www.google.com/doodles'), 1, resource)
+				{
+					uri: new URI('https://en.wikipedia.org/wiki/Main_Page'),
+					depth: 0,
+					originator: resource
+				},
+				{
+					uri: new URI('https://www.youtube.com/'),
+					depth: 0,
+					originator: resource
+				},
+				{
+					uri: new URI('https://www.npmjs.com/'),
+					depth: 0,
+					originator: resource
+				},
+				{
+					uri: new URI('https://www.facebook.com/doodles'),
+					depth: 0,
+					originator: resource
+				}
 			];
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(Resource, 'instance', function(uri, resource) {
+				return {
+					uri: new URI(uri),
+					depth: 0,
+					originator: resource
+				};
+			});
 
 			// Validation
 			this.validate(basicComposer, resource, callback, uris,

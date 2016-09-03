@@ -24,16 +24,22 @@ describe('Discoverer', function() {
 	});
 	describe('.init()', function() {
 		before(function() {
-			this.validate = function(crawler) {
+			this.validate = function(crawler, expectedCrawler) {
 				Discoverer.init(crawler);
 				sinon.assert.calledOnce(ResourceWorker.init);
-				sinon.assert.calledWithExactly(ResourceWorker.init, crawler, 'discover');
+				sinon.assert.calledWithExactly(ResourceWorker.init, expectedCrawler, 'discover');
 			};
 		});
 		beforeEach(resourceWorkerSpecHelper.beforeEach);
 		it('should call ResourceWorker.init()', function() {
+			// Input arguments
+			var crawler = 'crawler';
+
+			// Expected arguments to be passed to ResourceWorker.init
+			const expectedCrawler = 'crawler';
+
 			// Validation
-			this.validate('crawler');
+			this.validate(crawler, expectedCrawler);
 		});
 	});
 });

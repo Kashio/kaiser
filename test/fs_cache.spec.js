@@ -3,26 +3,27 @@
  */
 
 // npm modules
-var chai        = require('chai'),
-	expect      = require('chai').expect,
-	sinon       = require('sinon'),
-	nodefs      = require('node-fs'),
-	fspvr       = require('fspvr'),
-	iconv       = require('iconv-lite'),
-	URI         = require('urijs');
+var chai                     = require('chai'),
+	expect                   = require('chai').expect,
+	sinon                    = require('sinon'),
+	nodefs                   = require('node-fs'),
+	fspvr                    = require('fspvr'),
+	iconv                    = require('iconv-lite'),
+	URI                      = require('urijs');
 
 // core modules
-var path        = require('path'),
-	fs          = require('fs');
+var path                     = require('path'),
+	fs                       = require('fs');
 
 // lib modules
 require('./spec_helper');
 
-var kaiser      = require('../index'),
-	Resource    = require('../lib/resource');
+var kaiser                   = require('../index'),
+	Resource                 = require('../lib/resource'),
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
-var MemoryCache = kaiser.MemoryCache,
-	FsCache     = kaiser.FsCache;
+var MemoryCache              = kaiser.MemoryCache,
+	FsCache                  = kaiser.FsCache;
 
 chai.should();
 
@@ -151,6 +152,7 @@ describe('FsCache', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(FsCache.prototype, 'logic');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should save a resource with known encoding in filesystem sucessfully', function() {
 			// Object set-up
@@ -211,6 +213,7 @@ describe('FsCache', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(FsCache.prototype, 'tryMakeResourceDir');
+			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should try to make resource directory sucessfully', function() {
 			// Object set-up
