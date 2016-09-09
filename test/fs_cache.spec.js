@@ -19,7 +19,6 @@ var path                     = require('path'),
 require('./spec_helper');
 
 var kaiser                   = require('../index'),
-	Resource                 = require('../lib/resource'),
 	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
 
 var MemoryCache              = kaiser.MemoryCache,
@@ -159,7 +158,11 @@ describe('FsCache', function() {
 			var fsCache = new FsCache({}, { rootDir: 'websites' });
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -182,8 +185,12 @@ describe('FsCache', function() {
 			var fsCache = new FsCache({}, { rootDir: 'websites' });
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
-			resource,content = "buffer";
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+			resource.content = "buffer";
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to the callback
@@ -208,7 +215,7 @@ describe('FsCache', function() {
 
 				sinon.assert.calledOnce(FsCache.prototype.tryMakeResourceDir);
 				sinon.assert.calledWithExactly(FsCache.prototype.tryMakeResourceDir, resource);
-				fsCache.tryMakeResourceDir.returned(expectedResourceDir);
+				fsCache.tryMakeResourceDir.returned(expectedResourceDir).should.be.true;
 			};
 		});
 		beforeEach(function() {
@@ -220,15 +227,19 @@ describe('FsCache', function() {
 			var fsCache = new FsCache({}, { rootDir: 'websites' });
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Expected arguments to be passed to the callback
 			var expectedResourceDir = 'websites/google.com';
 
 			// Spies, Stubs, Mocks
-			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
-			this.sinon.stub(URI, 'decode').returns('websites/google.com/index.html');
-			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
+			this.sinon.stub(path, 'join').returns('websites/google.com');
+			this.sinon.stub(URI, 'decode').returns('websites/google.com');
+			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com');
 			this.sinon.stub(nodefs, 'mkdirSync').onFirstCall().throws(new Error('oops'));
 
 			// Validation

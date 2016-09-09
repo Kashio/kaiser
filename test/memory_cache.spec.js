@@ -5,7 +5,8 @@
 // npm modules
 var chai        = require('chai'),
 	expect      = require('chai').expect,
-	sinon       = require('sinon');
+	sinon       = require('sinon'),
+	URI         = require('urijs');
 
 // lib modules
 require('./spec_helper');
@@ -116,7 +117,11 @@ describe('MemoryCache', function() {
 			var memoryCache = new MemoryCache({});
 
 			// Input arguments
-			var resource = Resource.instance('https://www.google.com', null);
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 			var callback = this.sinon.spy();
 
 			// Expected arguments to be passed to Composer.init
@@ -135,7 +140,7 @@ describe('MemoryCache', function() {
 
 				sinon.assert.calledOnce(MemoryCache.prototype.retrieve);
 				sinon.assert.calledWithExactly(MemoryCache.prototype.retrieve, uri);
-				MemoryCache.prototype.retrieve.returned(expectedResource);
+				MemoryCache.prototype.retrieve.returned(expectedResource).should.be.true;
 			};
 		});
 		beforeEach(function() {
@@ -146,16 +151,20 @@ describe('MemoryCache', function() {
 			var memoryCache = new MemoryCache({});
 
 			// Input arguments
-			var uri = 'https://www.google.com';
+			var uri = 'https://www.google.com/';
 
 			// Expected resource to be returned by retrive()
-			const expectedResource = Resource.instance('https://www.google.com', null);
+			var expectedResource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
 
 			// Pre-conditions
-			memoryCache._rtable[expectedResource .uri.toString()] = expectedResource ;
+			memoryCache._rtable[expectedResource.uri.toString()] = expectedResource ;
 
 			// Validation
-			this.validate(memoryCache, uri, expectedResource );
+			this.validate(memoryCache, uri, expectedResource);
 		});
 		it('should fail to retrieve a cached resource from memory because uri is not a String', function() {
 			// Object set-up

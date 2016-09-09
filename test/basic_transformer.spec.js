@@ -193,7 +193,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.canTransform);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.canTransform, resource);
-				BasicTransformer.prototype.canTransform.returned(expectedReturnValue);
+				BasicTransformer.prototype.canTransform.returned(expectedReturnValue).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -472,7 +472,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.createRegexUrisDictionary);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.createRegexUrisDictionary, resource, regex);
-				BasicTransformer.prototype.createRegexUrisDictionary.returned(expectedRegexUrisDictionary);
+				BasicTransformer.prototype.createRegexUrisDictionary.returned(expectedRegexUrisDictionary).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -490,14 +490,17 @@ describe('BasicTransformer', function() {
 				originator: null
 			};
 			resource.content = " src='www.exmaple.com' />";
-			var regex =/(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
 
 			// Expected return value by canTransform()
+			var dictionaryRegex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
+			var groupsInput = " src='www.exmaple.com' />";
 			var expectedRegexUrisDictionary = [];
-			expectedRegexUrisDictionary[regex] = [];
-			expectedRegexUrisDictionary[regex].push(' src=\'');
-			expectedRegexUrisDictionary[regex].push('www.exmaple.com');
-			expectedRegexUrisDictionary[regex].push('\' />');
+			expectedRegexUrisDictionary[dictionaryRegex] = [];
+			expectedRegexUrisDictionary[dictionaryRegex][groupsInput] = [];
+			expectedRegexUrisDictionary[dictionaryRegex][groupsInput].push(' src=\'');
+			expectedRegexUrisDictionary[dictionaryRegex][groupsInput].push('www.exmaple.com');
+			expectedRegexUrisDictionary[dictionaryRegex][groupsInput].push('\' />');
 
 			// Validation
 			this.validate(basicTransformer, resource, regex,
@@ -511,7 +514,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.isUriBlackListed);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.isUriBlackListed, uri);
-				BasicTransformer.prototype.isUriBlackListed.returned(expectedReturnValue);
+				BasicTransformer.prototype.isUriBlackListed.returned(expectedReturnValue).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -541,7 +544,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.isUriAllowedByPolicyChecker);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.isUriAllowedByPolicyChecker, resource, uriObj);
-				BasicTransformer.prototype.isUriAllowedByPolicyChecker.returned(expectedReturnValue);
+				BasicTransformer.prototype.isUriAllowedByPolicyChecker.returned(expectedReturnValue).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -719,7 +722,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.calculateReplacePortionOfFetchedUris);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.calculateReplacePortionOfFetchedUris, resource, uri);
-				BasicTransformer.prototype.calculateReplacePortionOfFetchedUris.returned(expectedCalculatedPath);
+				BasicTransformer.prototype.calculateReplacePortionOfFetchedUris.returned(expectedCalculatedPath).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -785,7 +788,6 @@ describe('BasicTransformer', function() {
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
-			this.sinon.stub(util, 'format').returns('');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -826,7 +828,7 @@ describe('BasicTransformer', function() {
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
-			const expectedCalculatedPath = './dir1/file.txt';
+			const expectedCalculatedPath = 'dir1/file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
@@ -892,7 +894,7 @@ describe('BasicTransformer', function() {
 			var uri = 'http://www.google.com/dir1/file.txt';
 
 			// Expected return value by canTransform()
-			const expectedCalculatedPath = './file.txt';
+			const expectedCalculatedPath = 'file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
@@ -910,7 +912,7 @@ describe('BasicTransformer', function() {
 
 				sinon.assert.calledOnce(BasicTransformer.prototype.calculateReplacePortionOfNotFetchedUris);
 				sinon.assert.calledWithExactly(BasicTransformer.prototype.calculateReplacePortionOfNotFetchedUris, resource, uri);
-				BasicTransformer.prototype.calculateReplacePortionOfNotFetchedUris.returned(expectedUri);
+				BasicTransformer.prototype.calculateReplacePortionOfNotFetchedUris.returned(expectedUri).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -930,7 +932,7 @@ describe('BasicTransformer', function() {
 			var uri = 'http://www.example.com';
 
 			// Expected return value by canTransform()
-			const expectedUri = new URI('http://www.example.com');
+			var expectedUri = 'http://www.example.com/';
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,

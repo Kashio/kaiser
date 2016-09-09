@@ -350,7 +350,7 @@ describe('BasicFetcher', function() {
 			this.validate(basicFetcher);
 
 			// Specific validation
-			BasicFetcher.prototype.runRequest.returned();
+			BasicFetcher.prototype.runRequest.returned().should.be.true;
 
 		});
 		it('should fail to run a request because of passing `maxConcurrentRequests` threshold', function() {
@@ -365,7 +365,7 @@ describe('BasicFetcher', function() {
 			this.validate(basicFetcher);
 
 			// Specific validation
-			BasicFetcher.prototype.runRequest.returned();
+			BasicFetcher.prototype.runRequest.returned().should.be.true;
 		});
 		it('should run a request successfully', function() {
 			//Object set-up
@@ -398,7 +398,7 @@ describe('BasicFetcher', function() {
 				sinon.assert.calledWithExactly(runRequestFunction, number, string);
 				sinon.assert.calledTwice(BasicFetcher.prototype.runRequest);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest.secondCall);
-				BasicFetcher.prototype.runRequest.returned();
+				BasicFetcher.prototype.runRequest.returned().should.be.true;
 			});
 		});
 	});
@@ -820,7 +820,7 @@ describe('BasicFetcher', function() {
 				sinon.assert.calledOnce(BasicFetcher.prototype.decodeBuffer);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.decodeBuffer, buffer, contentTypeHeader, resource);
 				resource.should.have.property('encoding', expectedCharset);
-				BasicFetcher.prototype.decodeBuffer.returned(expectedDecodedBuffer);
+				BasicFetcher.prototype.decodeBuffer.returned(expectedDecodedBuffer).should.be.true;
 			};
 		});
 		beforeEach(function() {
@@ -883,7 +883,7 @@ describe('BasicFetcher', function() {
 
 				sinon.assert.calledOnce(BasicFetcher.prototype.getEncoding);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.getEncoding, buffer, contentTypeHeader);
-				BasicFetcher.prototype.getEncoding.returned(expectedResult);
+				BasicFetcher.prototype.getEncoding.returned(expectedResult).should.be.true;
 			};
 		});
 		beforeEach(function() {
@@ -917,7 +917,7 @@ describe('BasicFetcher', function() {
 			var contentTypeHeader = '';
 
 			// Expected return value by decodeBuffer()
-			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: false };
+			const expectedResult = { encoding: 'utf-8' };
 
 			// Spies, Stubs, Mocks
 			this.iconvEncodingExistsStub.returns(true);
@@ -926,16 +926,16 @@ describe('BasicFetcher', function() {
 			this.validate(basicFetcher, buffer, contentTypeHeader,
 				expectedResult);
 		});
-		it('should get a buffer encoding without setting the `addCharsetMetaTag` flag and set the encoding by plain `contentTypeHeader` value', function() {
+		it('should get a buffer encoding and set the `addCharsetMetaTag` flag and set the encoding by plain `contentTypeHeader` value', function() {
 			// Object set-up
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
 			// Input arguments
-			var buffer = '<head></head>';
+			var buffer = 'ABC';
 			var contentTypeHeader = '';
 
 			// Expected return value by decodeBuffer()
-			const expectedResult = { encoding: 'utf-8', addCharsetMetaTag: true };
+			const expectedResult = { encoding: 'binary', addCharsetMetaTag: true };
 
 			// Spies, Stubs, Mocks
 			this.iconvEncodingExistsStub.returns(false);

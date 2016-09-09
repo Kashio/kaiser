@@ -253,7 +253,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.getUris);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.getUris, resource);
-				BasicDiscoverer.prototype.getUris.returned(expectedUris);
+				BasicDiscoverer.prototype.getUris.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -287,7 +287,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.formatUris);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.formatUris, resource, uris);
-				BasicDiscoverer.prototype.formatUris.returned(expectedUris);
+				BasicDiscoverer.prototype.formatUris.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -369,7 +369,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.filterUris);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterUris, uris);
-				BasicDiscoverer.prototype.filterUris.returned(expectedUris);
+				BasicDiscoverer.prototype.filterUris.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -402,7 +402,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.filterPolicyCheckNotPassingUris);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterPolicyCheckNotPassingUris, uris);
-				BasicDiscoverer.prototype.filterPolicyCheckNotPassingUris.returned(expectedUris);
+				BasicDiscoverer.prototype.filterPolicyCheckNotPassingUris.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -417,7 +417,9 @@ describe('BasicDiscoverer', function() {
 			var uris = [new URI('http://google.com/')];
 
 			// Expected return value by filterPolicyCheckNotPassingUris()
-			const expectedUris = [new URI('http://google.com/')];
+			var expectedUri = new URI('http://google.com/');
+			expectedUri .toString(); // build expectedResource.__proto__._string property
+			const expectedUris = [expectedUri];
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isProtocolAllowed').returns(true);
@@ -437,7 +439,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.filterAnchors);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterAnchors, uris);
-				BasicDiscoverer.prototype.filterAnchors.returned(expectedUris);
+				BasicDiscoverer.prototype.filterAnchors.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -468,7 +470,7 @@ describe('BasicDiscoverer', function() {
 
 				sinon.assert.calledOnce(BasicDiscoverer.prototype.filterDuplicatedUris);
 				sinon.assert.calledWithExactly(BasicDiscoverer.prototype.filterDuplicatedUris, uris);
-				BasicDiscoverer.prototype.filterDuplicatedUris.returned(expectedUris);
+				BasicDiscoverer.prototype.filterDuplicatedUris.returned(expectedUris).should.be.true;
 			};
 		});
 		beforeEach(function () {
@@ -483,7 +485,7 @@ describe('BasicDiscoverer', function() {
 			var uris = [new URI('http://google.com/')];
 
 			// Expected return value by filterPolicyCheckNotPassingUris()
-			const expectedUris = [new URI('http://google.com/')];
+			const expectedUris = ['http://google.com/'];
 
 			// Validation
 			this.validate(basicDiscoverer, uris, expectedUris);
