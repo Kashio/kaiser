@@ -418,7 +418,7 @@ describe('BasicDiscoverer', function() {
 
 			// Expected return value by filterPolicyCheckNotPassingUris()
 			var expectedUri = new URI('http://google.com/');
-			expectedUri .toString(); // build expectedResource.__proto__._string property
+			expectedUri.toString(); // build expectedResource.__proto__._string property
 			const expectedUris = [expectedUri];
 
 			// Spies, Stubs, Mocks
@@ -433,7 +433,6 @@ describe('BasicDiscoverer', function() {
 	});
 	describe('#filterAnchors()', function() {
 		before(function () {
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicDiscoverer, uris, expectedUris) {
 				basicDiscoverer.filterAnchors(uris);
 
@@ -457,7 +456,7 @@ describe('BasicDiscoverer', function() {
 			const expectedUris = [new URI('http://google.com/')];
 
 			// Spies, Stubs, Mocks
-			this.helpersIsEmptyStub.returns(true);
+			this.sinon.stub(helpers, 'isEmpty').returns(true);
 
 			// Validation
 			this.validate(basicDiscoverer, uris, expectedUris);

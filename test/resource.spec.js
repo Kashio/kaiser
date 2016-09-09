@@ -117,6 +117,7 @@ describe('Resource', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(Resource, 'calculateDepth');
+			this.helpersIsIntegerStub = this.sinon.stub(helpers, 'isInteger').returns(true);
 		});
 		it('calculate a resource depth with null originator successfully', function() {
 			// Input arguments
@@ -163,7 +164,6 @@ describe('Resource', function() {
 			// Spies, Stubs, Mocks
 			this.sinon.stub(helpers, 'isNullOrUndefined').returns(false);
 			this.sinon.stub(URI.prototype, 'domain').onFirstCall().returns('google.com');
-			this.sinon.stub(helpers, 'isInteger').returns(true);
 
 			// Validation
 			this.validate(uri, originator, expectedDepth);
@@ -180,7 +180,7 @@ describe('Resource', function() {
 			// Spies, Stubs, Mocks
 			this.sinon.stub(helpers, 'isNullOrUndefined').returns(false);
 			this.sinon.stub(URI.prototype, 'domain').onFirstCall().returns('google.com');
-			this.sinon.stub(helpers, 'isInteger').returns(false);
+			this.helpersIsIntegerStub.returns(false);
 
 			// Validation
 			this.validate(uri, originator, expectedDepth);

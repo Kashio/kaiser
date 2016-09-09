@@ -19,7 +19,8 @@ var path                     = require('path'),
 require('./spec_helper');
 
 var kaiser                   = require('../index'),
-	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper'),
+	helpers                  = require('../lib/helpers');
 
 var MemoryCache              = kaiser.MemoryCache,
 	FsCache                  = kaiser.FsCache;
@@ -48,7 +49,7 @@ describe('FsCache', function() {
 			var options = {};
 
 			// Expected arguments to be passed to BasicComposer.init
-			const expectedCrawler = crawler;
+			const expectedCrawler = 'crawler';
 
 			// Validation
 			this.validate(crawler, options, expectedCrawler);
@@ -170,6 +171,7 @@ describe('FsCache', function() {
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(fsCache, 'tryMakeResourceDir').returns('websites/google.com');
+			this.sinon.stub(helpers, 'makeFileNameFromUri').returns('index.html');
 			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
 			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
 			this.sinon.stub(iconv, 'encodingExists').returns(true);
@@ -198,6 +200,7 @@ describe('FsCache', function() {
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(fsCache, 'tryMakeResourceDir').returns('websites/google.com');
+			this.sinon.stub(helpers, 'makeFileNameFromUri').returns('index.html');
 			this.sinon.stub(path, 'join').returns('websites/google.com/index.html');
 			this.sinon.stub(fspvr, 'reformatPath').returns('websites/google.com/index.html');
 			this.sinon.stub(iconv, 'encodingExists').returns(false);

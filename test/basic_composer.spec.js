@@ -34,7 +34,7 @@ describe('BasicComposer', function() {
 			var crawler = 'crawler';
 
 			// Expected arguments to be passed to BasicComposer.init
-			const expectedCrawler = crawler;
+			const expectedCrawler = 'crawler';
 
 			// Validation
 			this.validate(crawler, expectedCrawler);
@@ -63,7 +63,7 @@ describe('BasicComposer', function() {
 			var crawler = 'crawler';
 
 			// Expected arguments to be passed to Composer.init
-			const expectedCrawler = crawler;
+			const expectedCrawler = 'crawler';
 
 			// Validation
 			this.validate(basicComposer, crawler, expectedCrawler);

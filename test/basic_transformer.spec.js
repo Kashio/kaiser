@@ -93,7 +93,7 @@ describe('BasicTransformer', function() {
 			var crawler = 'crawler';
 			var options = { rewriteLinksFileTypes: 'rewriteLinksFileTypes' };
 
-			// Expected arguments to be passed to Discoverer.init
+			// Expected arguments to be passed to Transformer.init
 			const expectedCrawler = crawler;
 			const expectedRewriteLinksFileTypes = 'rewriteLinksFileTypes';
 
@@ -187,7 +187,6 @@ describe('BasicTransformer', function() {
 	});
 	describe('#canTransform()', function() {
 		before(function () {
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicTransformer, resource, expectedReturnValue) {
 				basicTransformer.canTransform(resource);
 
@@ -198,6 +197,7 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should allow a resource with no file name in the url to be transformed', function() {
@@ -254,7 +254,6 @@ describe('BasicTransformer', function() {
 	describe('#populateUriArrays()', function() {
 		before(function () {
 			this.uriIsStub = sinon.stub(URI.prototype, 'is');
-			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 			this.validate = function (basicTransformer, resource, fetchedUris, notFetchedUris,
 			                          expectedFetchedUris, expectedNotFetchedUris) {
 				basicTransformer.populateUriArrays(resource, fetchedUris, notFetchedUris);
@@ -267,6 +266,7 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'populateUriArrays');
+			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
 		});
 		it('should populate fetchedUris array', function() {
 			// Object set-up
@@ -492,7 +492,7 @@ describe('BasicTransformer', function() {
 			resource.content = " src='www.exmaple.com' />";
 			var regex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
 
-			// Expected return value by canTransform()
+			// Expected return value by createRegexUrisDictionary()
 			var dictionaryRegex = /(\s(?:src|href)\s*=\s*["']?\s*)([^"'>]+)(\s*["']?[^>]*>)/ig;
 			var groupsInput = " src='www.exmaple.com' />";
 			var expectedRegexUrisDictionary = [];
@@ -528,7 +528,7 @@ describe('BasicTransformer', function() {
 			// Input arguments
 			var uri = "http://www.example.com";
 
-			// Expected return value by canTransform()
+			// Expected return value by isUriBlackListed()
 			const expectedReturnValue = false;
 
 			// Validation
@@ -537,7 +537,6 @@ describe('BasicTransformer', function() {
 	});
 	describe('#isUriAllowedByPolicyChecker()', function() {
 		before(function () {
-			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
 			this.validate = function (basicTransformer, resource, uriObj,
 			                          expectedReturnValue) {
 				basicTransformer.isUriAllowedByPolicyChecker(resource, uriObj);
@@ -549,6 +548,7 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriAllowedByPolicyChecker');
+			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
@@ -563,7 +563,7 @@ describe('BasicTransformer', function() {
 			};
 			var uriObj = new URI('http://www.example.com');
 
-			// Expected return value by canTransform()
+			// Expected return value by isUriAllowedByPolicyChecker()
 			const expectedReturnValue = true;
 
 			// Spies, Stubs, Mocks
@@ -728,9 +728,10 @@ describe('BasicTransformer', function() {
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUris');
 			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
+			this.helpersMakeFileNameFromUri = this.sinon.stub(helpers, 'makeFileNameFromUri');
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
-		it('should calculate replace portion of a fetched uri with value of / sucessfully', function() {
+		it('should calculate replace portion of a fetched uri with value of `/` sucessfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
@@ -742,7 +743,7 @@ describe('BasicTransformer', function() {
 			};
 			var uri = '/';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = 'index.html';
 
 			// Validation
@@ -761,11 +762,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.example.com';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = '../www.example.com/index.html';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
+			this.helpersMakeFileNameFromUri.returns('index.html');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -783,11 +785,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.example.com';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = '../../www.example.com/index.html';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
+			this.helpersMakeFileNameFromUri.returns('index.html');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -805,11 +808,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.example.com';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = '../../www.example.com/index.html';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
+			this.helpersMakeFileNameFromUri.returns('index.html');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -827,11 +831,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = 'dir1/file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
+			this.helpersMakeFileNameFromUri.returns('file.txt');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -849,11 +854,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = '../dir1/file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
+			this.helpersMakeFileNameFromUri.returns('file.txt');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -871,11 +877,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = '../file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
+			this.helpersMakeFileNameFromUri.returns('file.txt');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -893,11 +900,12 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.google.com/dir1/file.txt';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfFetchedUris()
 			const expectedCalculatedPath = 'file.txt';
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
+			this.helpersMakeFileNameFromUri.returns('file.txt');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
@@ -931,7 +939,7 @@ describe('BasicTransformer', function() {
 			};
 			var uri = 'http://www.example.com';
 
-			// Expected return value by canTransform()
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
 			var expectedUri = 'http://www.example.com/';
 
 			// Validation

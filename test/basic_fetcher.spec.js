@@ -20,7 +20,8 @@ require('./spec_helper');
 
 var kaiser                   = require('../index'),
 	PolicyChecker            = require('../lib/policy_checker'),
-	resourceWorkerSpecHelper = require('./resource_worker_spec_helper');
+	resourceWorkerSpecHelper = require('./resource_worker_spec_helper'),
+	helpers                  = require('../lib/helpers');
 
 var Fetcher                  = kaiser.Fetcher,
 	BasicFetcher             = kaiser.BasicFetcher;
@@ -98,6 +99,9 @@ describe('BasicFetcher', function() {
 			const expectedRetryDelay = 5000;
 			const expectedMaxConcurrentRequests = 100;
 
+			// Spies, Stubs, Mocks
+			this.sinon.stub(helpers, 'isInteger').returns(false);
+
 			// Validation
 			this.validate(basicFetcher, crawler, options, requestSettings,
 				expectedCrawler, expectedMaxAttempts, expectedRetryDelay, expectedMaxConcurrentRequests);
@@ -123,6 +127,9 @@ describe('BasicFetcher', function() {
 			const expectedRetryDelay = 1;
 			const expectedMaxConcurrentRequests = 1;
 
+			// Spies, Stubs, Mocks
+			this.sinon.stub(helpers, 'isInteger').returns(true);
+
 			// Validation
 			this.validate(basicFetcher, crawler, options, requestSettings,
 				expectedCrawler, expectedMaxAttempts, expectedRetryDelay, expectedMaxConcurrentRequests);
@@ -145,6 +152,9 @@ describe('BasicFetcher', function() {
 			const expectedMaxConcurrentRequests = 100;
 			const expectedActiveRequest = 1;
 			const expectedTotalBytesFetched = 1;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(helpers, 'isInteger').returns(false);
 
 			// Validation
 			this.validate(basicFetcher, crawler, options, requestSettings,
@@ -185,6 +195,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'logic');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 		});
 		it ('should fail to create a resource request because `crawler.isStopping` is set', function() {
 			// Object set-up
@@ -340,6 +351,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'runRequest');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to run a request due to no `pendingRequests`', function() {
@@ -417,6 +429,7 @@ describe('BasicFetcher', function() {
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'requestLoop');
 			this.sinon.stub(BasicFetcher.prototype, 'handleResponse');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to request a resource due to passing `attemptsLeft` count without error', function() {
@@ -700,6 +713,7 @@ describe('BasicFetcher', function() {
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'handleResponse');
 			this.sinon.stub(BasicFetcher.prototype, 'runRequest');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should handle response successfully', function() {
@@ -825,6 +839,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'decodeBuffer');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should decode a buffer and add charset meta-tag to it', function() {
@@ -888,6 +903,7 @@ describe('BasicFetcher', function() {
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'getEncoding');
+			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should get a buffer encoding and set the `addCharsetMetaTag` flag', function() {
