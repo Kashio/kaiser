@@ -345,6 +345,7 @@ describe('BasicFetcher', function() {
 			this.validate = function(basicFetcher) {
 				basicFetcher.runRequest();
 				this.clock.tick(0);
+
 				sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest);
 			};
@@ -353,6 +354,9 @@ describe('BasicFetcher', function() {
 			this.sinon.spy(BasicFetcher.prototype, 'runRequest');
 			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
+		});
+		after(function () {
+			this.clock.restore();
 		});
 		it('should fail to run a request due to no `pendingRequests`', function() {
 			//Object set-up
@@ -496,6 +500,9 @@ describe('BasicFetcher', function() {
 					sinon.assert.calledOnce(BasicFetcher.prototype.handleResponse);
 					sinon.assert.calledWithExactly(BasicFetcher.prototype.handleResponse, expectedError, expectedResponse, expectedBody, expectedResource, expectedCallback);
 				};
+			});
+			after(function () {
+				this.clock.restore();
 			});
 			it('should fail handling response error with recoverable error `ESOCKETTIMEDOUT`', function() {
 				// Object set-up

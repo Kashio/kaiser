@@ -45,9 +45,7 @@ describe('Cache', function() {
 	describe('#retrieve()', function() {
 		it('should throw an exception', function() {
 			// Validation
-			expect(function() {
-				Cache.prototype.retrieve();
-			}).to.throw(Error, 'cannot call abstract method');
+			expect(Cache.prototype.retrieve).to.throw(Error, 'cannot call abstract method');
 		});
 	});
 });

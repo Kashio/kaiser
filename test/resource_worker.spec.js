@@ -218,9 +218,7 @@ describe('ResourceWorker', function() {
 	describe('#logic()', function() {
 		it('should throw an exception', function() {
 			// Validation
-			expect(function() {
-				ResourceWorker.prototype.logic();
-			}).to.throw(Error, 'cannot call abstract method');
+			expect(ResourceWorker.prototype.logic).to.throw(Error, 'cannot call abstract method');
 		});
 	});
 });

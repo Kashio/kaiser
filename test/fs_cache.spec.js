@@ -115,27 +115,21 @@ describe('FsCache', function() {
 			var fsCache = {};
 
 			// Specific validation
-			expect(function() {
-				FsCache.init.call(fsCache);
-			}).to.throw(Error, 'options must be given to construct an FsCache');
+			expect(FsCache.init.bind(fsCache)).to.throw(Error, 'options must be given to construct an FsCache');
 		});
 		it('should fail to initialize FsCache instance because `options.rootDir` is not provided', function() {
 			// Object set-up
 			var fsCache = {};
 
 			// Specific validation
-			expect(function() {
-				FsCache.init.call(fsCache, {});
-			}).to.throw(Error, 'options must provide rootDir');
+			expect(FsCache.init.bind(fsCache, {})).to.throw(Error, 'options must provide rootDir');
 		});
 		it('should fail to initialize FsCache instance because `options.rootDir` is not a String', function() {
 			// Object set-up
 			var fsCache = {};
 
 			// Specific validation
-			expect(function() {
-				FsCache.init.call(fsCache, { rootDir: 5});
-			}).to.throw(TypeError, 'rootDir must be of type string');
+			expect(FsCache.init.bind(fsCache, { rootDir: 5})).to.throw(TypeError, 'rootDir must be of type string');
 		});
 	});
 	describe('#logic()', function() {

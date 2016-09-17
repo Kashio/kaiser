@@ -174,9 +174,7 @@ describe('MemoryCache', function() {
 			var uri = 5;
 
 			// Specific validation
-			expect(function() {
-				memoryCache.retrieve(uri);
-			}).to.throw(TypeError, 'uri must be of type string');
+			expect(memoryCache.retrieve.bind(memoryCache, uri)).to.throw(TypeError, 'uri must be of type string');
 		});
 	});
 });

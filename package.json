@@ -26,28 +26,27 @@
   },
   "homepage": "https://github.com/Kashio/kaiser#readme",
   "dependencies": {
-    "async": "^1.5.2",
+    "async": "^2.0.1",
     "callsite": "^1.0.0",
-    "escape-string-regexp": "^1.0.4",
-    "fspvr": "^1.0.4",
+    "escape-string-regexp": "^1.0.5",
+    "fspvr": "^1.0.5",
     "iconv-lite": "^0.4.13",
     "node-fs": "^0.1.7",
     "nrtv-he": "0.0.0",
-    "request": "^2.72.0",
+    "request": "^2.74.0",
     "robots": "^0.9.4",
     "underscore": "^1.8.3",
-    "urijs": "^1.18.0"
+    "urijs": "^1.18.1"
   },
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
-    "express": "^4.13.4",
     "gulp": "^3.9.1",
-    "gulp-mocha": "^2.2.0",
-    "istanbul": "^0.4.3",
-    "mocha": "^2.4.5",
-    "mocha-sinon": "^1.1.5",
-    "sinon": "^1.17.4",
+    "gulp-mocha": "^3.0.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.0.2",
+    "mocha-sinon": "^1.1.6",
+    "sinon": "^1.17.5",
     "strip-bom": "^3.0.0"
   }
 }
