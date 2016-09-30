@@ -9,7 +9,8 @@ var EventEmitter             = require('events');
 var chai                     = require('chai'),
 	chai_things              = require('chai-things'),
 	sinon                    = require('sinon'),
-	URI                      = require('urijs');
+	URI                      = require('urijs'),
+	nrtvhe                   = require('nrtv-he');
 
 // lib modules
 require('./spec_helper');
@@ -182,7 +183,8 @@ describe('BasicDiscoverer', function() {
 			var resource = {
 				uri: new URI('https://www.google.com'),
 				depth: 0,
-				originator: null
+				originator: null,
+				content: 'body'
 			};
 			var callback = this.sinon.spy();
 
@@ -191,12 +193,14 @@ describe('BasicDiscoverer', function() {
 			const expectedResource = {
 				uri: new URI('https://www.google.com'),
 				depth: 0,
-				originator: null
+				originator: null,
+				content: 'body'
 			};
 			const expectedResult = [];
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
+			this.sinon.stub(nrtvhe, 'decode').returns('body');
 			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris').returns([]);
@@ -215,7 +219,8 @@ describe('BasicDiscoverer', function() {
 			var resource = {
 				uri: new URI('https://www.google.com'),
 				depth: 0,
-				originator: null
+				originator: null,
+				content: 'body'
 			};
 			var callback = this.sinon.spy();
 
@@ -224,12 +229,14 @@ describe('BasicDiscoverer', function() {
 			var expectedResource = {
 				uri: new URI('https://www.google.com'),
 				depth: 0,
-				originator: null
+				originator: null,
+				content: 'body'
 			};
 			const expectedResult = [new URI('http://www.google.com')];
 
 			// Spies, Stubs, Mocks
 			this.sinon.stub(PolicyChecker.prototype, 'isDepthAllowed').returns(true);
+			this.sinon.stub(nrtvhe, 'decode').returns('body');
 			this.sinon.stub(BasicDiscoverer.prototype, 'getUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'formatUris');
 			this.sinon.stub(BasicDiscoverer.prototype, 'filterUris').returns([new URI('http://www.google.com')]);
@@ -240,6 +247,7 @@ describe('BasicDiscoverer', function() {
 
 			// Specific validation pre-conditions
 			delete expectedResource.originator;
+			delete expectedResource.content;
 
 			// Specific validation
 			sinon.assert.calledOnce(eventEmitter.crawl);

@@ -126,7 +126,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'logic');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should fail to transform a resource because it can\'t be transformed', function() {
 			// Object set-up
@@ -198,7 +197,6 @@ describe('BasicTransformer', function() {
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'canTransform');
 			this.helpersIsEmptyStub = this.sinon.stub(helpers, 'isEmpty');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should allow a resource with no file name in the url to be transformed', function() {
 			// Object set-up
@@ -477,7 +475,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'createRegexUrisDictionary');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should create regex uris dictionary successfully', function() {
 			// Object set-up
@@ -519,7 +516,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriBlackListed');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a uri is black listed or not sucessfully', function() {
 			// Object set-up
@@ -549,7 +545,6 @@ describe('BasicTransformer', function() {
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'isUriAllowedByPolicyChecker');
 			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
 			// Object set-up
@@ -728,8 +723,6 @@ describe('BasicTransformer', function() {
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUris');
 			this.helpersNormalizeUriStub = this.sinon.stub(helpers, 'normalizeUri');
-			this.helpersMakeFileNameFromUri = this.sinon.stub(helpers, 'makeFileNameFromUri');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should calculate replace portion of a fetched uri with value of `/` sucessfully', function() {
 			// Object set-up
@@ -750,7 +743,7 @@ describe('BasicTransformer', function() {
 			this.validate(basicTransformer, resource, uri,
 				expectedCalculatedPath);
 		});
-		it('should calculate replace portion of a fetched uri from different domain and not inside a resource with directory in its url sucessfully', function() {
+		it('should calculate replace portion of a fetched uri with different hostname successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
@@ -767,59 +760,14 @@ describe('BasicTransformer', function() {
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
-			this.helpersMakeFileNameFromUri.returns('index.html');
+			this.sinon.stub(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUriWithDifferentHostname')
+				.returns('../www.example.com/index.html');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
 				expectedCalculatedPath);
 		});
-		it('should calculate replace portion of a fetched uri from different domain and inside a resource with an empty directory name in its url sucessfully', function() {
-			// Object set-up
-			var basicTransformer = new BasicTransformer({}, {});
-
-			// Input arguments
-			var resource = {
-				uri: new URI('https://www.google.com/dir1/file.txt'),
-				depth: 0,
-				originator: null
-			};
-			var uri = 'http://www.example.com';
-
-			// Expected return value by calculateReplacePortionOfFetchedUris()
-			const expectedCalculatedPath = '../../www.example.com/index.html';
-
-			// Spies, Stubs. Mocks
-			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
-			this.helpersMakeFileNameFromUri.returns('index.html');
-
-			// Validation
-			this.validate(basicTransformer, resource, uri,
-				expectedCalculatedPath);
-		});
-		it('should calculate replace portion of a fetched uri from different domain and inside a resource with directory in its url sucessfully', function() {
-			// Object set-up
-			var basicTransformer = new BasicTransformer({}, {});
-
-			// Input arguments
-			var resource = {
-				uri: new URI('https://www.google.com/dir1/file.txt'),
-				depth: 0,
-				originator: null
-			};
-			var uri = 'http://www.example.com';
-
-			// Expected return value by calculateReplacePortionOfFetchedUris()
-			const expectedCalculatedPath = '../../www.example.com/index.html';
-
-			// Spies, Stubs. Mocks
-			this.helpersNormalizeUriStub.returns(new URI('http://www.example.com'));
-			this.helpersMakeFileNameFromUri.returns('index.html');
-
-			// Validation
-			this.validate(basicTransformer, resource, uri,
-				expectedCalculatedPath);
-		});
-		it('should calculate replace portion of a fetched uri from the same domain and not inside a resource with directory in its url sucessfully', function() {
+		it('should calculate replace portion of a fetched uri with the same hostname successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
@@ -836,79 +784,138 @@ describe('BasicTransformer', function() {
 
 			// Spies, Stubs. Mocks
 			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
-			this.helpersMakeFileNameFromUri.returns('file.txt');
+			this.sinon.stub(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUriWithEqualHostname')
+				.returns('dir1/file.txt');
 
 			// Validation
 			this.validate(basicTransformer, resource, uri,
 				expectedCalculatedPath);
 		});
-		it('should calculate replace portion of a fetched uri from the same domain and inside a resource with directory in its url sucessfully', function() {
+	});
+	describe('#calculateReplacePortionOfFetchedUriWithDifferentHostname()', function() {
+		before(function () {
+			this.validate = function (basicTransformer, resource, uriObj,
+			                          expectedCalculatedPath) {
+				basicTransformer.calculateReplacePortionOfFetchedUriWithDifferentHostname(resource, uriObj);
+
+				sinon.assert.calledOnce(BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithDifferentHostname);
+				sinon.assert.calledWithExactly(BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithDifferentHostname, resource, uriObj);
+				BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithDifferentHostname.returned(expectedCalculatedPath).should.be.true;
+			};
+		});
+		beforeEach(function () {
+			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUriWithDifferentHostname');
+			this.sinon.stub(helpers, 'makeFileNameFromUri').returns('index.html');
+		});
+		it('should calculate replace portion of a fetched uri in the root directory of a resource with different hostname successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
 			var resource = {
-				uri: new URI('https://www.google.com/dir2/home.html'),
+				uri: new URI('https://www.google.com'),
 				depth: 0,
 				originator: null
 			};
-			var uri = 'http://www.google.com/dir1/file.txt';
+			var uriObj = new URI('http://www.example.com');
 
-			// Expected return value by calculateReplacePortionOfFetchedUris()
-			const expectedCalculatedPath = '../dir1/file.txt';
-
-			// Spies, Stubs. Mocks
-			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
-			this.helpersMakeFileNameFromUri.returns('file.txt');
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
+			var expectedCalculatedPath = '..\\www.example.com\\index.html';
 
 			// Validation
-			this.validate(basicTransformer, resource, uri,
+			this.validate(basicTransformer, resource, uriObj,
 				expectedCalculatedPath);
 		});
-		it('should calculate replace portion of a fetched uri from the same domain and inside a resource with the same nested directory in its url sucessfully', function() {
+		it('should calculate replace portion of a fetched uri not in the root directory of a resource with different hostname successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
 			var resource = {
-				uri: new URI('https://www.google.com/dir1/dir2/home.html'),
+				uri: new URI('https://www.google.com/dir1/file.txt'),
 				depth: 0,
 				originator: null
 			};
-			var uri = 'http://www.google.com/dir1/file.txt';
+			var uriObj = new URI('http://www.example.com');
 
-			// Expected return value by calculateReplacePortionOfFetchedUris()
-			const expectedCalculatedPath = '../file.txt';
-
-			// Spies, Stubs. Mocks
-			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
-			this.helpersMakeFileNameFromUri.returns('file.txt');
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
+			var expectedCalculatedPath = '..\\..\\www.example.com\\index.html';
 
 			// Validation
-			this.validate(basicTransformer, resource, uri,
+			this.validate(basicTransformer, resource, uriObj,
 				expectedCalculatedPath);
 		});
-		it('should calculate replace portion of a fetched uri from the same domain and inside a resource with the same directory in its url sucessfully', function() {
+	});
+	describe('#calculateReplacePortionOfFetchedUriWithEqualHostname()', function() {
+		before(function () {
+			this.validate = function (basicTransformer, resource, uriObj,
+			                          expectedCalculatedPath) {
+				basicTransformer.calculateReplacePortionOfFetchedUriWithEqualHostname(resource, uriObj);
+
+				sinon.assert.calledOnce(BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithEqualHostname);
+				sinon.assert.calledWithExactly(BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithEqualHostname, resource, uriObj);
+				BasicTransformer.prototype.calculateReplacePortionOfFetchedUriWithEqualHostname.returned(expectedCalculatedPath).should.be.true;
+			};
+		});
+		beforeEach(function () {
+			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfFetchedUriWithEqualHostname');
+			this.sinon.stub(helpers, 'makeFileNameFromUri').returns('index.html');
+		});
+		it('should calculate replace portion of a fetched uri in the root directory of a resource with the same hostname successfully', function() {
 			// Object set-up
 			var basicTransformer = new BasicTransformer({}, {});
 
 			// Input arguments
 			var resource = {
-				uri: new URI('https://www.google.com/dir1/home.html'),
+				uri: new URI('https://www.example.com'),
 				depth: 0,
 				originator: null
 			};
-			var uri = 'http://www.google.com/dir1/file.txt';
+			var uriObj = new URI('http://www.example.com');
 
-			// Expected return value by calculateReplacePortionOfFetchedUris()
-			const expectedCalculatedPath = 'file.txt';
-
-			// Spies, Stubs. Mocks
-			this.helpersNormalizeUriStub.returns(new URI('http://www.google.com/dir1/file.txt'));
-			this.helpersMakeFileNameFromUri.returns('file.txt');
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
+			var expectedCalculatedPath = 'index.html';
 
 			// Validation
-			this.validate(basicTransformer, resource, uri,
+			this.validate(basicTransformer, resource, uriObj,
+				expectedCalculatedPath);
+		});
+		it('should calculate replace portion of a fetched uri not in the root directory of a resource and with the same root directory with the same hostname successfully', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = {
+				uri: new URI('https://www.example.com/dir1/dir2/index.html'),
+				depth: 0,
+				originator: null
+			};
+			var uriObj = new URI('http://www.example.com/dir1/dir3/index.html');
+
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
+			var expectedCalculatedPath = '..\\dir3\\index.html';
+
+			// Validation
+			this.validate(basicTransformer, resource, uriObj,
+				expectedCalculatedPath);
+		});
+		it('should calculate replace portion of a fetched uri not in the root directory of a resource and not with the same root directory with the same hostname successfully', function() {
+			// Object set-up
+			var basicTransformer = new BasicTransformer({}, {});
+
+			// Input arguments
+			var resource = {
+				uri: new URI('https://www.example.com/dir1/dir2/index.html'),
+				depth: 0,
+				originator: null
+			};
+			var uriObj = new URI('http://www.example.com/dir1/index.html');
+
+			// Expected return value by calculateReplacePortionOfNotFetchedUris()
+			var expectedCalculatedPath = '..\\index.html';
+
+			// Validation
+			this.validate(basicTransformer, resource, uriObj,
 				expectedCalculatedPath);
 		});
 	});
@@ -925,7 +932,6 @@ describe('BasicTransformer', function() {
 		});
 		beforeEach(function () {
 			this.sinon.spy(BasicTransformer.prototype, 'calculateReplacePortionOfNotFetchedUris');
-			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		it('should check if a resource is allowed by the polocy checker or not sucessfully', function() {
 			// Object set-up

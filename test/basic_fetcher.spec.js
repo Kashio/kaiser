@@ -346,13 +346,11 @@ describe('BasicFetcher', function() {
 				basicFetcher.runRequest();
 				this.clock.tick(0);
 
-				sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest);
 			};
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'runRequest');
-			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});
 		after(function () {
@@ -365,7 +363,11 @@ describe('BasicFetcher', function() {
 			// Validation
 			this.validate(basicFetcher);
 
+			// Spies, Stubs, Mocks
+			this.sinon.stub(helpers, 'isInteger').returns(false);
+
 			// Specific validation
+			sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 			BasicFetcher.prototype.runRequest.returned().should.be.true;
 
 		});
@@ -374,13 +376,16 @@ describe('BasicFetcher', function() {
 			var basicFetcher = new BasicFetcher({}, {}, {});
 
 			// Pre-conditions
-			basicFetcher.pendingRequests.push(1);
 			basicFetcher.activeRequests = 100;
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(helpers, 'isInteger').returns(false);
 
 			// Validation
 			this.validate(basicFetcher);
 
 			// Specific validation
+			sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 			BasicFetcher.prototype.runRequest.returned().should.be.true;
 		});
 		it('should run a request successfully', function() {
@@ -407,15 +412,13 @@ describe('BasicFetcher', function() {
 			this.validate(basicFetcher);
 
 			// Specific validation
-			process.nextTick(function() {
-				basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
-				basicFetcher.pendingRequests.should.be.empty;
-				sinon.assert.calledOnce(runRequestFunction);
-				sinon.assert.calledWithExactly(runRequestFunction, number, string);
-				sinon.assert.calledTwice(BasicFetcher.prototype.runRequest);
-				sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest.secondCall);
-				BasicFetcher.prototype.runRequest.returned().should.be.true;
-			});
+			basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
+			basicFetcher.pendingRequests.should.be.empty;
+			sinon.assert.calledOnce(runRequestFunction);
+			sinon.assert.calledWithExactly(runRequestFunction, number, string);
+			sinon.assert.calledTwice(BasicFetcher.prototype.runRequest);
+			sinon.assert.calledWithExactly(BasicFetcher.prototype.runRequest.secondCall);
+			BasicFetcher.prototype.runRequest.returned().should.be.true;
 		});
 	});
 	describe('#requestLoop()', function() {
@@ -714,12 +717,10 @@ describe('BasicFetcher', function() {
 					sinon.assert.calledWithExactly(callback, expectedError, expectedResource);
 				}
 				basicFetcher.activeRequests.should.be.equal(expectedActiveRequests);
-				sinon.assert.calledOnce(BasicFetcher.prototype.runRequest);
 			};
 		});
 		beforeEach(function() {
 			this.sinon.spy(BasicFetcher.prototype, 'handleResponse');
-			this.sinon.stub(BasicFetcher.prototype, 'runRequest');
 			this.sinon.stub(helpers, 'isInteger').returns(true);
 			resourceWorkerSpecHelper.beforeEach.call(this);
 		});

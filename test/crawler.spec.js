@@ -3,7 +3,8 @@
  */
 
 // core modules
-var EventEmitter             = require('events');
+var EventEmitter             = require('events'),
+	path                     = require('path');
 
 // npm modules
 var chai                     = require('chai'),
@@ -106,6 +107,7 @@ describe('Crawler', function() {
 			this.sinon.stub(helpers, 'normalizeUri').returns(expectedUri);
 			this.sinon.stub(helpers, 'isInteger').returns(false);
 			this.sinon.stub(helpers, 'isNullOrUndefined').returns(true);
+			this.sinon.stub(path, 'dirname').returns('dir');
 
 			// Validation
 			this.validate(crawler, options,
@@ -209,6 +211,7 @@ describe('Crawler', function() {
 				.onCall(9).returns(false)
 				.onCall(10).returns(false);
 			helpersIsNullOrUndefinedStub.returns(true);
+			this.sinon.stub(path, 'dirname').returns('dir');
 
 			// Validation
 			this.validate(crawler, options,
@@ -248,6 +251,7 @@ describe('Crawler', function() {
 				.onCall(16).returns(false)
 				.onCall(17).returns(false)
 				.onCall(18).returns(false);
+			this.sinon.stub(path, 'dirname').returns('dir');
 
 			// Validation
 			this.validate(crawler, options,
