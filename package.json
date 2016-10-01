@@ -5,9 +5,11 @@
   "main": "index.js",
   "scripts": {
     "test": "gulp run-tests",
-    "posttest": "npm run lint",
+    "posttest": "npm run coverage & npm run lint",
+    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec",
     "lint": "eslint --fix --max-warnings 1 lib/ *.js tests/ && echo Lint passed.",
-    "coverage": "istanbul cover ./node_modules/mocha/bin/_mocha -- -R spec"
+    "preversion": "npm test",
+    "postversion": "git push && git push --tags && npm publish"
   },
   "repository": {
     "type": "git",
@@ -29,7 +31,7 @@
     "async": "^2.0.1",
     "callsite": "^1.0.0",
     "escape-string-regexp": "^1.0.5",
-    "fspvr": "^1.0.5",
+    "fspvr": "^1.0.7",
     "iconv-lite": "^0.4.13",
     "node-fs": "^0.1.7",
     "nrtv-he": "0.0.0",
