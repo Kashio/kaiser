@@ -1,6 +1,6 @@
 # Kaiser - Node.js web crawler
 
-![Kaiser Logo](https://raw.githubusercontent.com/Kashio/kaiser/master/logo/kaiser.png)
+<img src="logo/kaiser.png" alt="Kaiser Logo" width="222" height="220" />
 
 [![NPM](https://nodei.co/npm/kaiser.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/kaiser/)
 
@@ -23,8 +23,8 @@ new Crawler({
 - [Crawler Pipeline](#crawler-pipeline)
 - [Basic Pipline Components](#basic-pipiline-components)
 - [Plugin Custom Components](#plugin-custom-components)
-- [Crawler Events](#crawler-events)
-- [Crawler Options](#crawler-options)
+- [Events](#events)
+- [Options](#options)
 - [Pitfalls](#pitfalls)
 
 ---
@@ -159,7 +159,7 @@ crawler.transformer = transformer;
 crawler.start();
 ```
 
-## Crawler Events
+## Events
 * `crawlstart()` - fires when the crawler starts.
 * `crawlcomplete()` - fires when the crawler finishes.
 * `crawlbulkstart(uris, originator)` - fires when a bulk of uris are starting the crawling pipeline.
@@ -200,7 +200,7 @@ that was cached in the process.
 * `storeerror(resource, error)` - fires when the **fs cache** component can't store a resource in the filysystem.
 `resource` is the `Resource` object that can't be saved, `error` is the error object (error specific to the implementation of the component logic).
 
-## Crawler Options
+## Options
 * `uri` - The uri we want to start crawling from.
 * `followRobotsTxt` - if `true`, follows robots.txt rules. Defaults to `false`.
 * `maxDepth` - The maximum depth of resource to still crawl links for the same resource domain as the original resource.
