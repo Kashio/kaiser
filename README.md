@@ -35,23 +35,23 @@ The crawler pipline is a sequence of steps that kaiser takes when crawling.
 This overview will provide a high-level description of the steps in the pipeline.
 
 ### Compose
-This step is responsible of taking uris to be crawled and map them to a `Resource` object,
-the basic object 
+This step is responsible for taking uris to be crawled and map them to a `Resource` object,
+an object used throughout the pipeline, to store data about the crawled resources.
 
 ### Fetch
-This step is responsible of taking the `Resource` objects produced in the previous step
+This step is responsible for taking the `Resource` objects produced in the previous step
 and enrich them with `content` and `encoding` by fetching them using HTTP requests.
 
 ### Discover
-This step is responsible of taking the enriched `Resource` from the previous step
-and find more links to be launched in a new crawling pipeline.
+This step is responsible for taking the enriched `Resource` objects from the previous step
+and find more links that will be crawled aswell.
 
 ### Transform
 This step is responsible for taking the `Resource` objects from the previous step
 and applying all sorts of transformations on the `content` of a `Resource`.
 
 ### Cache
-This step is responsible for caching the `Resource` objects (or parts of it) using some caching mechanism.
+This step is responsible for caching the `Resource` using some caching mechanism.
 
 ## Basic Pipline Components
 The crawler is supplied with basic components for each step of the pipeline.
@@ -60,30 +60,35 @@ This is an overview of each of the basic components, supplied by the crawler,
 that have a reason for their goal or strategy to change.
 
 #### Basic Discoverer
-> ##### Goal
-> Find more links to be launched in a new crawling pipeline.
-> ##### Strategy
-> Links are found using regex to match any url between `src` or `href` tags, a `url` css property's value (such as of `background` property), or any valid url that appears
-in the documents.
+> <b>Goal</b><br/>
+> Find more links to be crawled.
+> <br/><b>Strategy</b><br/>
+> Links are found using regex to match any url:
+> * between `src` or `href` tags
+> * `url` css property's value (such as of `background` property)
+> * valid url that appears in the documents
 
 #### Basic Transformer
-> ##### Goal
+> <b>Goal</b><br/>
 > Transform the `content` of a `Resource` so that all links found will be relative paths
 to where they would've been if they were stored on the filesystem.
-> ##### Strategy
-> Links are found using regex to match any url between `src` or `href` tags, a `url` css property's value (such as of `background` property), or any valid url that appears
-in the documents, and there relative paths are being calulcated (Different calculations are applied for fetched and not fetched uris, depending on the crawler rules).
+> <br/><b>Strategy</b><br/>
+> Links relative/absolute paths are calculated depending if the resource of the link was fetched or not.
+> Links are found using regex to match any url:
+> * between `src` or `href` tags
+> * `url` css property's value (such as of `background` property)
+> * valid url that appears in the documents
 
 #### Memory Cache
-> ##### Goal
+> <b>Goal</b><br/>
 > Store `Resource` objects in the memory.
-> ##### Strategy
+> <br/><b>Strategy</b><br/>
 > `Resource` objects are stored in a dictionary using their unique url, for easy retrival later.
 
 #### Fs Cache
-> ##### Goal
+> <b>Goal</b><br/>
 > Store `Resource` objects in the filesystem.
-> ##### Strategy
+> <br/><b>Strategy</b><br/>
 > `Resource` objects are stored in the correct hierarchy in the filesystem.
 
 ## Plugin Custom Components
@@ -91,7 +96,7 @@ The crawler was built around the idea of pipeline and components so other custom
 could be used instead of the basic one, achieving different goals.
 
 ### Create a custom component
-Each component is a `ResourceWorker`, meaning it process a `Resource` object in someway.
+Each component is a `ResourceWorker`, meaning it's processing a `Resource` object in someway.
 In-order to create a custom component we would create a class that extends it.
 ```js
 function TextInserterTransformer(crawler, options) {
@@ -109,7 +114,7 @@ TextInserterTransformer.init = function(crawler, options) {
 };
 
 // we must implmenet logic function, this function is called in each step
-// it's the core of your component
+// it's the core of our component
 TextInserterTransformer.prototype.logic = function(resource, callback) {
 	var self = this;
 	if (self.canTransform(resource)) {
@@ -127,7 +132,7 @@ TextInserterTransformer.prototype.canTransform = function(resource) {
 };
 ```
 
-> Class to extend when creating custom components:
+> Classes to extend when creating custom components:
 > * Composer
 > * Fetcher
 > * Discoverer
@@ -286,7 +291,9 @@ and they will be injected to the components. These options are valid only for th
 ## Pitfalls
 ### Alot of `ETIMEDOUT` and `ESOCKETTIMEDOUT` errors
 This might be due to the server blocking alot of requests from your ip in a short amount of time.
-Another cause might be by the low number of workers Node.js have for resolving DNS queries, try to increase it.
+A plausible solution for this would be to lower the `maxConcurrentRequests` option of the basic fetcher.
+Another cause might be due to the low number of workers Node.js have for resolving DNS queries.
+You can try increasing it:
 ```js
 process.env.UV_THREADPOOL_SIZE = 128;
 ```
