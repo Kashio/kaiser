@@ -4,7 +4,8 @@
 
 // core modules
 var util                     = require('util'),
-	EventEmitter             = require('events');
+	EventEmitter             = require('events'),
+	pathSepartor             = require('path').sep;
 
 // npm modules
 var chai                     = require('chai'),
@@ -820,7 +821,7 @@ describe('BasicTransformer', function() {
 			var uriObj = new URI('http://www.example.com');
 
 			// Expected return value by calculateReplacePortionOfNotFetchedUris()
-			var expectedCalculatedPath = '..\\www.example.com\\index.html';
+			var expectedCalculatedPath = util.format('..%swww.example.com%sindex.html', pathSepartor, pathSepartor);
 
 			// Validation
 			this.validate(basicTransformer, resource, uriObj,
@@ -839,7 +840,7 @@ describe('BasicTransformer', function() {
 			var uriObj = new URI('http://www.example.com');
 
 			// Expected return value by calculateReplacePortionOfNotFetchedUris()
-			var expectedCalculatedPath = '..\\..\\www.example.com\\index.html';
+			var expectedCalculatedPath = util.format('..%s..%swww.example.com%sindex.html', pathSepartor, pathSepartor, pathSepartor);
 
 			// Validation
 			this.validate(basicTransformer, resource, uriObj,
@@ -893,7 +894,7 @@ describe('BasicTransformer', function() {
 			var uriObj = new URI('http://www.example.com/dir1/dir3/index.html');
 
 			// Expected return value by calculateReplacePortionOfNotFetchedUris()
-			var expectedCalculatedPath = '..\\dir3\\index.html';
+			var expectedCalculatedPath = util.format('..%sdir3%sindex.html', pathSepartor, pathSepartor);
 
 			// Validation
 			this.validate(basicTransformer, resource, uriObj,
@@ -912,7 +913,7 @@ describe('BasicTransformer', function() {
 			var uriObj = new URI('http://www.example.com/dir1/index.html');
 
 			// Expected return value by calculateReplacePortionOfNotFetchedUris()
-			var expectedCalculatedPath = '..\\index.html';
+			var expectedCalculatedPath = util.format('..%sindex.html', pathSepartor);
 
 			// Validation
 			this.validate(basicTransformer, resource, uriObj,
