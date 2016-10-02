@@ -43,6 +43,7 @@
   "devDependencies": {
     "chai": "^3.5.0",
     "chai-things": "^0.2.0",
+    "coveralls": "^2.11.14",
     "express": "^4.14.0",
     "gulp": "^3.9.1",
     "gulp-mocha": "^3.0.1",
