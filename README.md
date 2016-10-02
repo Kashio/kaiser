@@ -2,7 +2,7 @@
 
 <img src="logo/kaiser.png" alt="Kaiser Logo" width="222" height="220" />
 
-[![NPM](https://nodei.co/npm/kaiser.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/kaiser/)
+[![NPM](https://nodei.co/npm/kaiser-crawler.png?downloads=true&downloadRank=true&stars=true)](https://nodei.co/npm/kaiser-crawler/)
 
 [![Build status](https://travis-ci.org/Kashio/kaiser.svg?branch=master)](https://travis-ci.org/Kashio/kaiser)
 [![Coverage Status](https://coveralls.io/repos/github/Kashio/kaiser/badge.svg?branch=master)](https://coveralls.io/github/Kashio/kaiser?branch=master)
