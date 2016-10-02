@@ -1,5 +1,5 @@
 {
-  "name": "kaiser",
+  "name": "kaiser-crawler",
   "version": "1.0.0",
   "description": "Node.js module for crawling the web",
   "main": "index.js",
