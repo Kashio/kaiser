@@ -21,7 +21,7 @@ new Crawler({
 ## Table of contents
 
 - [Crawler Pipeline](#crawler-pipeline)
-- [Basic Pipline Components](#basic-pipiline-components)
+- [Basic Pipeline Components](#basic-pipeline-components)
 - [Plugin Custom Components](#plugin-custom-components)
 - [Events](#events)
 - [Options](#options)
@@ -53,7 +53,7 @@ and applying all sorts of transformations on the `content` of a `Resource`.
 ### Cache
 This step is responsible for caching the `Resource` using some caching mechanism.
 
-## Basic Pipline Components
+## Basic Pipeline Components
 The crawler is supplied with basic components for each step of the pipeline.
 Each component has its own strategy and goal.
 This is an overview of each of the basic components, supplied by the crawler,
