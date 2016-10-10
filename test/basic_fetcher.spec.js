@@ -273,6 +273,37 @@ describe('BasicFetcher', function() {
 			// Specific validation
 			basicFetcher.crawler.isStopping.should.be.equal(expectedCrawlerIsStopping);
 		});
+		it('should fail to create a resource request because a crawler policy was not met', function() {
+			// Object set-up
+			var basicFetcher = new BasicFetcher({
+				isStopping: false
+			}, {}, {});
+
+			// Input arguments
+			var resource = {
+				uri: new URI('https://www.google.com'),
+				depth: 0,
+				originator: null
+			};
+			var callback = this.sinon.spy();
+
+			// Expected arguments to be passed to the callback
+			const expectedError = new Error('Fetch failed because a crawler policy was not met');
+
+			// Spies, Stubs, Mocks
+			this.sinon.stub(PolicyChecker.prototype, 'isRobotsTxtAllowsResource').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isProtocolAllowed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isFileTypeAllowed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isHostnameAllowed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkAllowed').returns(false);
+
+			// Validation
+			this.validate(basicFetcher, resource, callback,
+				expectedError, true);
+		});
 		it('should fail to create a resource request because the resource was already fetched', function() {
 			// Object set-up
 			var basicFetcher = new BasicFetcher({}, {}, {});
@@ -293,6 +324,10 @@ describe('BasicFetcher', function() {
 			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(false);
 			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(false);
 			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isProtocolAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isFileTypeAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isHostnameAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkAllowed').returns(true);
 
 			// Pre-conditions
 			basicFetcher.fetchedUris.push(resource.uri.toString());
@@ -328,6 +363,10 @@ describe('BasicFetcher', function() {
 			this.sinon.stub(PolicyChecker.prototype, 'isLinkNumberPassed').returns(false);
 			this.sinon.stub(PolicyChecker.prototype, 'isSiteSizeLimitPassed').returns(false);
 			this.sinon.stub(PolicyChecker.prototype, 'isMaxTimeOverallPassed').returns(false);
+			this.sinon.stub(PolicyChecker.prototype, 'isProtocolAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isFileTypeAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isHostnameAllowed').returns(true);
+			this.sinon.stub(PolicyChecker.prototype, 'isLinkAllowed').returns(true);
 
 			// Validation
 			this.validate(basicFetcher, resource, callback,
