@@ -31,7 +31,7 @@ new Crawler({
 
 ## Crawler Pipeline
 
-The crawler pipline is a sequence of steps that kaiser takes when crawling.
+The crawler pipeline is a sequence of steps that kaiser takes when crawling.
 This overview will provide a high-level description of the steps in the pipeline.
 
 ### Compose
@@ -44,7 +44,7 @@ and enrich them with `content` and `encoding` by fetching them using HTTP reques
 
 ### Discover
 This step is responsible for taking the enriched `Resource` objects from the previous step
-and find more links that will be crawled aswell.
+and find more links that will be crawled as well.
 
 ### Transform
 This step is responsible for taking the `Resource` objects from the previous step
@@ -140,7 +140,7 @@ TextInserterTransformer.prototype.canTransform = function(resource) {
 > * Cache
 
 ### Usage of the created component
-To inject the custom component we will aquire it and inject it to the options passed to the crawler.
+To inject the custom component we will acquire it and inject it to the options passed to the crawler.
 ```js
 var Crawler = require('kaiser').Crawler;
 var TextInserterTransformer = require('TextInserterTransformer');
@@ -188,7 +188,7 @@ that was fetched in the process.
 that is about to be searched for more uris.
 * `discovercomplete(resource, uris)` - fires when the discover component finishes. `resource` is the `Resource` object
 that was searched for more uris in the process, `uris` are the found uris.
-* `discovererror(resource, uri, error)` - fires when the **basic disocver** component can't format a found link.
+* `discovererror(resource, uri, error)` - fires when the **basic discover** component can't format a found link.
 `resource` is the `Resource` object that the `uri` was found in, `error` is the error object
 (error specific to the implementation of the component logic).
 * `transformstart(resource)` - fires when the fetch transform starts. `resource` is the `Resource` object
@@ -218,7 +218,7 @@ Defaults to `1024 * 1024 * 16`.
 Defaults to `Number.POSITIVE_INFINITY`.
 * `siteSizeLimit` - The maximum total of bytes to be crawled. This number can be passed but not by a large margin,
 because this check is only being applied before fetching new resources but not after,
-meaning that if we allow 10 byts to be fetched and now we're at 9, and the next resource is 10 bytes, then we will fetch a total
+meaning that if we allow 10 bytes to be fetched and now we're at 9, and the next resource is 10 bytes, then we will fetch a total
 of 19 bytes and then stop.
 Defaults to `maxFileSize * maxLinkNumber`.
 * `maxTimeOverall` - The maximum time to crawl. Do no depend on this restriction too much,
@@ -255,13 +255,13 @@ Defaults to `Number.POSITIVE_INFINITY`.
   * \/xml$
   * ^image\/.+$
   * application\/octet-stream
-* `disallowedHostnames` - Array of blacklist hostnames not to be crawled. Defaults to empty array.
+* `disallowedHostnames` - Array of blacklist host-names not to be crawled. Defaults to empty array.
 * `allowedLinks` - Regex array of allowed links to be crawled. Defaults to
   * .* 
 * `composer` - The `composer` component to be used. Defaults to `BasicComposer`.
 * `fetcher` - The `fetcher` component to be used. Defaults to `BasicFetcher`
 (These are [Request](https://github.com/request/request) options, because it used in the basic fetcher).
-  * `maxAttempts` - The number of attempts to try fetch a resource that couldn't be fetched.
+  * `maxAttempts` - The number of attempts to try fetch a resource that could not be fetched.
   * `retryDelay` - The delay in milliseconds between each retry.
   * `maxConcurrentRequests` - The maximum number of concurrent requests.
   * `proxy` - Proxy the requests through this uri.
@@ -269,7 +269,7 @@ Defaults to `Number.POSITIVE_INFINITY`.
   * `acceptCookies` - If `true` use cookies. Defaults to `true`.
   * `userAgent` - User agent string. Defaults to `Node/kaiser <version> (https://github.com/Kashio/kaiser.git)`
   * `maxSockets` - The maximum number of sockets to be used by the underlying http agent.
-  * `timeout` - The timeount in milliseconds to wait for a server to send response headers before aborting requests.
+  * `timeout` - The timeout in milliseconds to wait for a server to send response headers before aborting requests.
   * `strictSSL` - If `true`, requires SSL certificates be valid. Defaults to `true`.
 * `discoverer` - The `discoverer` component to be used. Defaults to `BasicDiscoverer`.
 * `transformer` - The `transformer` component to be used. Defaults to `BasicTransformer`.
@@ -289,8 +289,8 @@ Defaults to `Number.POSITIVE_INFINITY`.
 and they will be injected to the components. These options are valid only for the basic components supplied with kaiser.
 
 ## Pitfalls
-### Alot of `ETIMEDOUT` and `ESOCKETTIMEDOUT` errors
-This might be due to the server blocking alot of requests from your ip in a short amount of time.
+### `ETIMEDOUT` and `ESOCKETTIMEDOUT` errors
+This might be due to the server blocking a lot of requests from your ip in a short amount of time.
 A plausible solution for this would be to lower the `maxConcurrentRequests` option of the basic fetcher.
 Another cause might be due to the low number of workers Node.js have for resolving DNS queries.
 You can try increasing it:
@@ -298,7 +298,7 @@ You can try increasing it:
 process.env.UV_THREADPOOL_SIZE = 128;
 ```
 
-### Applicaiton is slowed down by the crawler
+### Application is slowed down by the crawler
 Because the crawler allows you to plugin components as you wish, some might be hindering the applicaiton
 by their logic, and might block the event loop. Even the supplied components are somewhat CPU intensive,
 therefore it is recommended to launch the crawler in a new process.
