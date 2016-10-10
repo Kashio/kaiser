@@ -1,6 +1,6 @@
 {
   "name": "kaiser-crawler",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Node.js module for crawling the web",
   "main": "index.js",
   "scripts": {
