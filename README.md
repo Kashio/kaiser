@@ -12,7 +12,7 @@
 ## Basic usage
 
 ```js
-var Crawler = require('kaiser').Crawler;
+var Crawler = require('kaiser-crawler').Crawler;
 new Crawler({
     uri: 'http://www.google.com'
 }).start();
